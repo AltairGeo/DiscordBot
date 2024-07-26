@@ -70,11 +70,11 @@ async def addwarn(ctx, name: discord.Member, reason: str):
         if i[0] == name.id:
             result = warn.counter(i[1])
             if result == 100:
-                await name.timeout_for(timedelta(hours=1))
+                await name.timeout_for(timedelta(minutes=20))
             elif result == 105:
-                await name.timeout_for(timedelta(hours=24))
+                await name.timeout_for(timedelta(hours=6))
             elif result == 200:
-                await name.ban(reason="8 предупреждений")
+                await name.ban(reason="16 предупреждений")
 
 
 @bot.slash_command(description="Удалить предупреждение у пользователя по id.")

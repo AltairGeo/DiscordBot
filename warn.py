@@ -74,13 +74,13 @@ def get_count_warn():
     return liste
 
 def counter(count):
-    if count <= 3:
+    if count <= 10:
         return 100
-    elif count <= 7:
+    elif count <= 15:
         return 105
-    elif count > 7:
+    elif count > 15:
         return 200
-# 100 - 1 hour
-# 105 - 1 days
+# 100 - 20 minutes
+# 105 - 6 hour
 # 200 - ban
 
