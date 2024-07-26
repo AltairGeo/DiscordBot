@@ -4,9 +4,38 @@ import config
 import warn
 import WikiLib as wl
 import othr_func as func
+from translate import Translator
 
+class TranslatorView(discord.ui.View):
+    def __init__(self, messages):
+        super().__init__()
+        self.messagee = messages
+        #print(self.message)
+    
+    
+    @discord.ui.select(
+        placeholder = "Выбери язык:",
+        min_values = 1,
+        max_values = 1,
+        options = [
+            discord.SelectOption(label="Ru to En"),
+            discord.SelectOption(label="En to Ru")
+        ]
+    )
+    async def select_callback(self, select, interaction):
+        message_trans = str(self.messagee)
+        result = select.values[0]
+        if result == "Ru to En":
+            translatorr = Translator(from_lang='ru', to_lang='en')
+            transs = translatorr.translate(message_trans)
+            await interaction.response.send_message(f"Перевод: {transs}")       
+        elif result == "En to Ru":
+            translator = Translator(from_lang='en', to_lang='ru')
+            trans = translator.translate(message_trans)
+            await interaction.response.send_message(f"Перевод: {trans}")
+
+               
 bot = discord.Bot()
-
 
 @bot.slash_command()
 async def ping(ctx):
@@ -18,11 +47,6 @@ async def dollarcost(ctx):
     cost = func.get_dollar_cost()
     stor = f"1$ = {cost}₽"
     await ctx.respond(stor)
-
-
-@bot.slash_command()
-async def say(ctx, message: str):
-    ctx.respond(message)
 
 
 @bot.slash_command(description="Дать предупреждение пользователю.")
@@ -97,5 +121,11 @@ async def grws(ctx):
         await ctx.respond(f"{name} \n{text} \n \n{link}")
     else:
         await ctx.respond("Вики-Модуль выключен!")
+
+
+@bot.slash_command()
+async def translate(ctx, message: str):
+    #print(message)
+    await ctx.respond(view=TranslatorView(messages=message))
         
 bot.run(config.TOKEN)
