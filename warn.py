@@ -1,8 +1,8 @@
 import sqlite3 as sq
-
+import config
 
 def db_connect():
-    db = sq.connect('warns.db')
+    db = sq.connect(config.path_to_db)
     return db
 
 

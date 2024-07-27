@@ -44,8 +44,7 @@ async def ping(ctx):
 
 @bot.slash_command()
 async def dollarcost(ctx):
-    dollar = func.dollar()
-    cost = dollar.get_dollar_cost()
+    cost = func.get_dollar_cost(None)
     stor = f"1$ = {cost}₽"
     await ctx.respond(stor)
 
