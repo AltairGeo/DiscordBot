@@ -123,7 +123,7 @@ async def grws(ctx):
         count = 0
         for i in res:
             count += 1
-            if count >= 1900:
+            if count >= 1500:
                 break
             result += i
         result += f"...\n {link}"
