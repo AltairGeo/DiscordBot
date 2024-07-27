@@ -118,7 +118,17 @@ async def grws(ctx):
         name = wiki_engine.get_name()
         text = wiki_engine.get_text()
         link = wiki_engine.get_self_link(1)
-        await ctx.respond(f"{name} \n{text} \n \n{link}")
+        res = f"{name} \n{text}"
+        result = ""
+        count = 0
+        for i in res:
+            count += 1
+            if count >= 1900:
+                break
+            result += i
+        result += f"...\n {link}"
+        await ctx.respond(result)
+            
     else:
         await ctx.respond("Вики-Модуль выключен!")
 
