@@ -1,17 +1,23 @@
 from datetime import timedelta
 import discord
+from discord.ext import tasks
 import config
 import warn
 import WikiLib as wl
 import othr_func as func
 from translate import Translator
+import asyncio
+import httpx
+import collections
+import feedparser
 
+
+#Класс выбора для переводчика
 class TranslatorView(discord.ui.View):
     def __init__(self, messages):
         super().__init__()
         self.messagee = messages
         #print(self.message)
-    
     
     @discord.ui.select(
         placeholder = "Выбери язык:",
@@ -36,6 +42,52 @@ class TranslatorView(discord.ui.View):
 
                
 bot = discord.Bot()
+
+#Действия при запуске бота
+@bot.event
+async def on_ready():
+    print("Bot started!")
+    post_q = collections.deque(maxlen=120)
+    httpx_client = httpx.AsyncClient()
+    num_of_test_char = 70
+    # вызов асинхронного парсера rss ленты и выставление параметров
+    await meduza_news(num_of_test_char, post_q, httpx_client)
+# Парсинг rss ленты meduza.io
+async def meduza_news(num_of_test_char, post_query, httpx_client):
+    guild = bot.get_guild(int(config.SERVER_ID))
+    channel = guild.get_channel(int(config.news_id))
+    rss_link = 'https://meduza.io/rss2/all'
+    while True:
+        try:
+            resurs = await httpx_client.get(rss_link)
+        except:
+            await asyncio.sleep(10)
+            continue
+
+        feed = feedparser.parse(resurs.text)
+
+        for i in feed['entries']:
+            title = i['title']
+            summary = i['summary']
+            summary_ready = summary.replace("<p>", "")
+            date = i['published']
+            date_r = date.replace("+0300", "")
+            link = i['link']
+            news_text = f'{title}\n{summary_ready}\n\n{date_r}\n{link}\n\n_'
+            head = news_text[:num_of_test_char]
+            if head in post_query:
+                continue
+            post_query.appendleft(head)
+            print(news_text)
+            await channel.send(news_text)
+        await asyncio.sleep(20)
+    
+@bot.event
+async def on_member_join(member):
+    await member.send(
+        f'Добро пожаловать на сервер, {member.mention}! '
+    )
+
 
 @bot.slash_command()
 async def ping(ctx):
@@ -111,6 +163,7 @@ async def mute(ctx, name: discord.Member, hours: int):
         await ctx.respond("У вас нет прав на выполнение данной команды!")
 
 
+#Модуль рандомной статьи из вики 
 @bot.slash_command()
 async def grws(ctx):
     if config.ENABLE_WIKI_MODULE == 1:
@@ -124,18 +177,23 @@ async def grws(ctx):
         for i in res:
             count += 1
             if count >= 1500:
+                result += "..."
                 break
             result += i
-        result += f"...\n {link}"
+        result += f"\n {link}"
         await ctx.respond(result)
             
     else:
         await ctx.respond("Вики-Модуль выключен!")
 
 
+
 @bot.slash_command()
 async def translate(ctx, message: str):
     #print(message)
     await ctx.respond(view=TranslatorView(messages=message))
-        
+
+
+
 bot.run(config.TOKEN)
+
