@@ -1,6 +1,5 @@
 from datetime import timedelta
 import discord
-from discord.ext import tasks
 import config
 import warn
 import WikiLib as wl
@@ -43,6 +42,7 @@ class TranslatorView(discord.ui.View):
                
 bot = discord.Bot()
 
+
 #Действия при запуске бота
 @bot.event
 async def on_ready():
@@ -52,11 +52,14 @@ async def on_ready():
     num_of_test_char = 70
     # вызов асинхронного парсера rss ленты и выставление параметров
     await meduza_news(num_of_test_char, post_q, httpx_client)
+
+
 # Парсинг rss ленты meduza.io
 async def meduza_news(num_of_test_char, post_query, httpx_client):
     guild = bot.get_guild(int(config.SERVER_ID))
     channel = guild.get_channel(int(config.news_id))
     rss_link = 'https://meduza.io/rss2/all'
+    firstly_indicator = 0
     while True:
         try:
             resurs = await httpx_client.get(rss_link)
@@ -79,7 +82,9 @@ async def meduza_news(num_of_test_char, post_query, httpx_client):
                 continue
             post_query.appendleft(head)
             print(news_text)
-            await channel.send(news_text)
+            if firstly_indicator == 1:
+                await channel.send(news_text)
+        firstly_indicator = 1
         await asyncio.sleep(20)
     
 @bot.event
