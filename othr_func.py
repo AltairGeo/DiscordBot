@@ -1,10 +1,13 @@
-import requests
-import discord
+import requests, json
 from bs4 import BeautifulSoup
-import asyncio
-import feedparser
-import collections
-import httpx
+from config import  ai_url, model
+
+
+headers = {
+    "Content-Type": "application/json"
+}
+
+
 
 def get_dollar_cost(non: None):
     URL = "https://ru.investing.com/currencies/usd-rub"
@@ -14,6 +17,30 @@ def get_dollar_cost(non: None):
     return cost.text
 
 
+def ai_forget():
+    data = {
+    'model': model,
+    'messages': [
+        {'role': 'user', 'content': "Forget the context."}
+    ]
+    }
+    response = requests.post(ai_url, json=data)
+    if response.status_code == 200:
+        return "Контекст очищен!"
+    else:
+        return "Error!"
 
+def ai_resp(prompt: str):
+    data = {
+    'model': model,
+    'messages': [
+        {'role': 'user', 'content': prompt}
+    ]
+    }
+    response = requests.post(ai_url, json=data)
+    if response.status_code == 200:
+        return response.json()["choices"][0]["message"]["content"]
+    else:
+        return "Ошибка!", response.status_code, response.text
 
 

@@ -86,12 +86,7 @@ async def meduza_news(num_of_test_char, post_query, httpx_client):
                 await channel.send(news_text)
         firstly_indicator = 1
         await asyncio.sleep(20)
-    
-@bot.event
-async def on_member_join(member):
-    await member.send(
-        f'Добро пожаловать на сервер, {member.mention}! '
-    )
+
 
 
 @bot.slash_command()
@@ -198,6 +193,14 @@ async def translate(ctx, message: str):
     #print(message)
     await ctx.respond(view=TranslatorView(messages=message))
 
+
+@bot.slash_command()
+async def ai(ctx, prompt: str):
+    ctx.respond(func.ai_resp(prompt))
+
+@bot.slash_command()
+async def ai_forget_context():
+    ctx.respond(func.ai_forget())
 
 
 bot.run(config.TOKEN)
