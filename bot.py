@@ -196,11 +196,11 @@ async def translate(ctx, message: str):
 
 @bot.slash_command()
 async def ai(ctx, prompt: str):
-    ctx.respond(func.ai_resp(prompt))
+    await ctx.respond(func.ai_resp(prompt))
 
 @bot.slash_command()
 async def ai_forget_context(ctx):
-    ctx.respond(func.ai_forget())
+    await ctx.respond(func.ai_forget())
 
 
 bot.run(config.TOKEN)
