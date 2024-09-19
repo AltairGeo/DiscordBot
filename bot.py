@@ -199,7 +199,7 @@ async def ai(ctx, prompt: str):
     ctx.respond(func.ai_resp(prompt))
 
 @bot.slash_command()
-async def ai_forget_context():
+async def ai_forget_context(ctx):
     ctx.respond(func.ai_forget())
 
 
