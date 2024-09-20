@@ -1,11 +1,10 @@
-import requests, json
+import requests
 from bs4 import BeautifulSoup
-from config import  ai_url, model
+from config import model
+from openai import OpenAI
+import sqlite3 as sq
+from config import path_to_hist_db
 
-
-headers = {
-    "Content-Type": "application/json"
-}
 
 
 
@@ -18,29 +17,51 @@ def get_dollar_cost(non: None):
 
 
 def ai_forget():
-    data = {
-    'model': model,
-    'messages': [
-        {'role': 'user', 'content': "Forget the context."}
-    ]
-    }
-    response = requests.post(ai_url, json=data)
-    if response.status_code == 200:
-        return "Контекст очищен!"
-    else:
-        return "Error!"
+    try:
+        client = OpenAI(
+        base_url = 'http://localhost:11434/v1',
+        api_key='ollama',
+        )
+        response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return "Контекст забыт!"
+    except Exception as e:
+        return f"Ошибка: {e}"
 
 def ai_resp(prompt: str):
-    data = {
-    'model': model,
-    'messages': [
-        {'role': 'user', 'content': prompt}
-    ]
-    }
-    response = requests.post(ai_url, json=data)
-    if response.status_code == 200:
-        return response.json()["choices"][0]["message"]["content"]
-    else:
-        return "Ошибка!", response.status_code, response.text
+    try:
+        client = OpenAI(
+        base_url = 'http://localhost:11434/v1',
+        api_key='ollama',
+        )
+        response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Ошибка: {e}"
 
 
+
+def db_history():
+    db = sq.connect(path_to_hist_db)
+    return db
+
+def db_hist_init():
+    db = db_history()
+    cur = db.cursor()
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS history (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        AUTHOR TEXT,
+        AUTHOR_ID TEXT,
+        CONTENT TEXT,
+        CHANNEL TEXT,
+        CHANNEL_ID TEXT,
+        TIME TEXT,
+        ACTION TEXT
+                )
+    """)

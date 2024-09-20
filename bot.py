@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 import discord
 import config
 import warn
@@ -9,6 +9,10 @@ import asyncio
 import httpx
 import collections
 import feedparser
+import pytz
+
+intents = discord.Intents.default()
+intents.message_content = True
 
 
 #Класс выбора для переводчика
@@ -40,7 +44,7 @@ class TranslatorView(discord.ui.View):
             await interaction.response.send_message(f"Перевод: {trans}")
 
                
-bot = discord.Bot()
+bot = discord.Bot(intents=intents)
 
 
 #Действия при запуске бота
@@ -196,12 +200,47 @@ async def translate(ctx, message: str):
 
 @bot.slash_command()
 async def ai(ctx, prompt: str):
-    await ctx.respond(func.ai_resp(prompt))
+    await ctx.respond("Обработка...")
+    async with ctx.channel.typing():
+        resp = func.ai_resp(prompt)
+    await ctx.send(resp)
+
 
 @bot.slash_command()
 async def ai_forget_context(ctx):
-    await ctx.respond(func.ai_forget())
+    await ctx.send(func.ai_forget())
 
 
-bot.run(config.TOKEN)
+@bot.listen()
+async def on_message(message: discord.Message):
+    author, author_id, content, chanel, chanel_id = message.author.name, message.author.id, message.content, message.channel, message.channel.id
+    moscow = pytz.timezone('Europe/Moscow')
+    db = func.db_history()
+    cur = db.cursor()
+    cur.execute("""
+    INSERT INTO history (
+        AUTHOR, AUTHOR_ID, CONTENT, CHANNEL, CHANNEL_ID, TIME, ACTION
+                ) VALUES (?, ?, ?, ?, ?, ?, "WRITE")
+    """, (str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow))))
+    print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow)))
+    db.commit()
+    db.close()
+
+@bot.listen()
+async def on_message_delete(message: discord.Message):
+    author, author_id, content, chanel, chanel_id = message.author.name, message.author.id, message.content, message.channel, message.channel.id
+    db = func.db_history()
+    cur = db.cursor()
+    cur.execute("""
+    INSERT INTO history (
+        AUTHOR, AUTHOR_ID, CONTENT, CHANNEL, CHANNEL_ID, TIME, ACTION
+                ) VALUES (?, ?, ?, ?, ?, ?, "DELETE")
+    """, (str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(datetime.now())))
+    print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(datetime.now()))
+    db.commit()
+    db.close()
+
+if __name__ == "__main__":
+    func.db_hist_init()
+    bot.run(config.TOKEN)
 
