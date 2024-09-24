@@ -1,4 +1,4 @@
-import requests
+import requests, json
 from bs4 import BeautifulSoup
 from config import model
 from openai import OpenAI
@@ -65,3 +65,25 @@ def db_hist_init():
         ACTION TEXT
                 )
     """)
+
+
+class API_r():
+    
+    def get_request_json(self, atr: str, url: str) -> str:
+        try:
+            req = requests.get(url)
+            req.raise_for_status()
+            req = req.json()
+            return req[atr]
+        except Exception as e:
+            return f"Ошибка! Подробнее: {e}"
+    
+    
+    def get_request(self, url: str) -> str:
+        try:
+            req = requests.get(url)
+            req.raise_for_status()
+            return req
+        except Exception as e:
+            return f"Ошибка! Подробнее: {e}"
+

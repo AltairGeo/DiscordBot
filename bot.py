@@ -8,8 +8,10 @@ from translate import Translator
 import asyncio
 import httpx
 import collections
-import feedparser
+import feedparser, urllib
 import pytz
+from bs4 import BeautifulSoup
+
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -85,7 +87,7 @@ async def meduza_news(num_of_test_char, post_query, httpx_client):
             if head in post_query:
                 continue
             post_query.appendleft(head)
-            print(news_text)
+            #print(news_text)
             if firstly_indicator == 1:
                 await channel.send(news_text)
         firstly_indicator = 1
@@ -93,18 +95,18 @@ async def meduza_news(num_of_test_char, post_query, httpx_client):
 
 
 
-@bot.slash_command()
-async def ping(ctx):
-    await ctx.respond("pong")
+#@bot.slash_command()
+#async def ping(ctx):
+#    await ctx.respond("pong")
 
-
+# Цена доллара
 @bot.slash_command()
 async def dollarcost(ctx):
     cost = func.get_dollar_cost(None)
     stor = f"1$ = {cost}₽"
     await ctx.respond(stor)
 
-
+# Дать предупреждение
 @bot.slash_command(description="Дать предупреждение пользователю.")
 async def addwarn(ctx, name: discord.Member, reason: str):
     author_roles = ctx.author.roles
@@ -145,12 +147,12 @@ async def delwarn(ctx, id_warn: int):
     if right == 0:
         await ctx.respond("У вас нет прав на выполнение данной команды!")
 
-
+# Все предупреждения пользователя
 @bot.slash_command()
 async def alluserwarn(ctx, name: discord.Member):
     await ctx.respond(warn.all_user_warn(name.id))
 
-
+# мут
 @bot.slash_command(description="Дать мут на определённое кол-во часов.")
 async def mute(ctx, name: discord.Member, hours: int):
     delta = timedelta(hours=hours)
@@ -186,7 +188,6 @@ async def grws(ctx):
             result += i
         result += f"\n {link}"
         await ctx.respond(result)
-            
     else:
         await ctx.respond("Вики-Модуль выключен!")
 
@@ -194,10 +195,9 @@ async def grws(ctx):
 
 @bot.slash_command()
 async def translate(ctx, message: str):
-    #print(message)
     await ctx.respond(view=TranslatorView(messages=message))
 
-
+# Запрос к нейросети нужен ollama сервер, и указать модель в config.py
 @bot.slash_command()
 async def ai(ctx, prompt: str):
     await ctx.respond("Обработка...")
@@ -211,6 +211,70 @@ async def ai_forget_context(ctx):
     await ctx.send(func.ai_forget())
 
 
+##########
+# Разное #
+##########
+
+@bot.slash_command()
+async def fox(ctx):
+    ap = func.API_r()
+    await ctx.respond(ap.get_request_json(atr="image", url="https://randomfox.ca/floof/"))
+
+
+@bot.slash_command()
+async def yes_gif(ctx):
+    ap = func.API_r()
+    await ctx.respond(ap.get_request_json(atr="image", url="https://yesno.wtf/api?force=yes"))
+
+@bot.slash_command()
+async def no_gif(ctx):
+    ap = func.API_r()
+    await ctx.respond(ap.get_request_json(atr="image", url="https://yesno.wtf/api?force=no"))
+
+@bot.slash_command()
+async def weather(ctx, city: str):
+    city = city.replace(" ", "+")
+    #print(city)
+    url = f"https://wttr.in/{city}?Q0nT&lang=ru"
+    #print(url)
+    async with httpx.AsyncClient() as client: 
+        resp = await client.get(url)
+        try:
+            await ctx.respond(f"```{resp.text}```") 
+        except Exception as e:
+            await ctx.respond(f"Ошибка! {resp}")
+
+
+#http://numbersapi.com/
+@bot.slash_command()
+async def fact_about_number(ctx, num: int):
+    url = f"http://numbersapi.com/{str(num)}"
+    async with httpx.AsyncClient() as client: 
+        resp = await client.get(url)
+        try:
+            translatorr = Translator(from_lang='en', to_lang='ru')
+            respond = f"EN: {resp.text}\nRU:    {translatorr.translate(resp.text)}"
+            await ctx.respond(respond)
+        except Exception as e:
+            await ctx.respond(f"Ошибка! {e}")
+
+#https://catfact.ninja/fact
+@bot.slash_command()
+async def cat_fact(ctx):
+    api = func.API_r()
+    resp = api.get_request_json(atr="fact", url="https://catfact.ninja/fact")
+    translatorr = Translator(from_lang='en', to_lang='ru')
+    await ctx.respond(f"EN: {resp}\nRU: {translatorr.translate(resp)}")
+
+
+
+
+
+
+
+####################
+####################
+
 @bot.listen()
 async def on_message(message: discord.Message):
     author, author_id, content, chanel, chanel_id = message.author.name, message.author.id, message.content, message.channel, message.channel.id
@@ -222,7 +286,7 @@ async def on_message(message: discord.Message):
         AUTHOR, AUTHOR_ID, CONTENT, CHANNEL, CHANNEL_ID, TIME, ACTION
                 ) VALUES (?, ?, ?, ?, ?, ?, "WRITE")
     """, (str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow))))
-    print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow)))
+    #print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow)))
     db.commit()
     db.close()
 
@@ -236,7 +300,7 @@ async def on_message_delete(message: discord.Message):
         AUTHOR, AUTHOR_ID, CONTENT, CHANNEL, CHANNEL_ID, TIME, ACTION
                 ) VALUES (?, ?, ?, ?, ?, ?, "DELETE")
     """, (str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(datetime.now())))
-    print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(datetime.now()))
+    #print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(datetime.now()))
     db.commit()
     db.close()
 

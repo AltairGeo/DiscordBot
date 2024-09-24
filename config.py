@@ -1,5 +1,7 @@
 import os
+from dotenv import load_dotenv 
 
+load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 path_to_db = "warns.db"
