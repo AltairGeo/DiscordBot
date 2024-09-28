@@ -1,9 +1,9 @@
 # Run
-1. Clone repo.
+## 1. Clone repo.
   ```
   https://github.com/AltairGeo/DiscordBot/edit/master/README.md
   ```
-2. Create .env file
+## 2. Create .env file
   ```
   cd DiscordBot
   vim .env
@@ -14,7 +14,7 @@ And fill it out as follows
   YANDEX_MAP=<"Your token for yandex-map-static from here https://yandex.ru/maps-api/products/static-api">
   ```
 
-3. Install dependency
+## 3. Install dependency
   ```
   python -m venv .venv # create virtual enviroment
   
@@ -22,7 +22,7 @@ And fill it out as follows
   
   pip install -r requirements.txt
   ```
-4. Run
+## 4. Run
 You can just run it manually with the ```python bot.py command```, but I recommend using the systemd daemon:
   ```
   cd /etc/systemd/system/
