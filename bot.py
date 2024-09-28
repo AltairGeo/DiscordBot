@@ -6,11 +6,12 @@ import WikiLib as wl
 import othr_func as func
 from translate import Translator
 import asyncio
-import httpx
+import httpx, requests
 import collections
 import feedparser, urllib
 import pytz
 from bs4 import BeautifulSoup
+from io import BytesIO
 
 
 intents = discord.Intents.default()
@@ -60,6 +61,13 @@ async def on_ready():
     await meduza_news(num_of_test_char, post_q, httpx_client)
 
 
+@bot.event
+async def on_member_join(member):
+    await member.send(
+        f'Добро пожаловать на сервер, {member.mention}!'
+    )
+
+
 # Парсинг rss ленты meduza.io
 async def meduza_news(num_of_test_char, post_query, httpx_client):
     guild = bot.get_guild(int(config.SERVER_ID))
@@ -94,6 +102,19 @@ async def meduza_news(num_of_test_char, post_query, httpx_client):
         await asyncio.sleep(20)
 
 
+@bot.command()
+async def gtn(ctx):
+    """A Slash Command to play a Guess-the-Number game."""
+
+    await ctx.respond('Guess a number between 1 and 10.')
+    guess = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+
+    if int(guess.content) == 5:
+        await ctx.send('You guessed it!')
+    else:
+        await ctx.send('Nope, try again.')
+
+
 
 #@bot.slash_command()
 #async def ping(ctx):
@@ -102,7 +123,7 @@ async def meduza_news(num_of_test_char, post_query, httpx_client):
 # Цена доллара
 @bot.slash_command()
 async def dollarcost(ctx):
-    cost = func.get_dollar_cost(None)
+    cost = await func.get_dollar_cost(None)
     stor = f"1$ = {cost}₽"
     await ctx.respond(stor)
 
@@ -218,62 +239,97 @@ async def ai_forget_context(ctx):
 @bot.slash_command()
 async def fox(ctx):
     ap = func.API_r()
-    await ctx.respond(ap.get_request_json(atr="image", url="https://randomfox.ca/floof/"))
+    resp = await ap.get_request_json(atr="image", url="https://randomfox.ca/floof/")
+    await ctx.respond(resp)
 
 
 @bot.slash_command()
 async def yes_gif(ctx):
     ap = func.API_r()
-    await ctx.respond(ap.get_request_json(atr="image", url="https://yesno.wtf/api?force=yes"))
+    resp = await ap.get_request_json(atr="image", url="https://yesno.wtf/api?force=yes")
+    await ctx.respond(resp)
 
 @bot.slash_command()
 async def no_gif(ctx):
     ap = func.API_r()
-    await ctx.respond(ap.get_request_json(atr="image", url="https://yesno.wtf/api?force=no"))
+    resp = await ap.get_request_json(atr="image", url="https://yesno.wtf/api?force=no")
+    await ctx.respond(resp)
 
 @bot.slash_command()
 async def weather(ctx, city: str):
     city = city.replace(" ", "+")
-    #print(city)
     url = f"https://wttr.in/{city}?Q0nT&lang=ru"
-    #print(url)
-    async with httpx.AsyncClient() as client: 
-        resp = await client.get(url)
-        try:
-            await ctx.respond(f"```{resp.text}```") 
-        except Exception as e:
-            await ctx.respond(f"Ошибка! {resp}")
+    api = func.API_r()
+    try:
+        resp = await api.get_request(url)
+        await ctx.respond(f"```{resp.text}```") 
+    except Exception as e:
+        await ctx.send(f"Ошибка! {resp}")
 
 
 #http://numbersapi.com/
 @bot.slash_command()
 async def fact_about_number(ctx, num: int):
     url = f"http://numbersapi.com/{str(num)}"
-    async with httpx.AsyncClient() as client: 
-        resp = await client.get(url)
-        try:
-            translatorr = Translator(from_lang='en', to_lang='ru')
-            respond = f"EN: {resp.text}\nRU:    {translatorr.translate(resp.text)}"
-            await ctx.respond(respond)
-        except Exception as e:
-            await ctx.respond(f"Ошибка! {e}")
+    try:
+        api = func.API_r()
+        resp = await api.get_request(url)
+        translatorr = Translator(from_lang='en', to_lang='ru')
+        respond = f"EN: {resp.text}\nRU: {translatorr.translate(resp.text)}"
+        await ctx.respond(respond)
+    except Exception as e:
+        await ctx.send(f"Ошибка! {e}")
 
 #https://catfact.ninja/fact
 @bot.slash_command()
 async def cat_fact(ctx):
     api = func.API_r()
-    resp = api.get_request_json(atr="fact", url="https://catfact.ninja/fact")
+    resp = await api.get_request_json(atr="fact", url="https://catfact.ninja/fact")
     translatorr = Translator(from_lang='en', to_lang='ru')
-    await ctx.respond(f"EN: {resp}\nRU: {translatorr.translate(resp)}")
+    await ctx.respond(f"EN: {resp}\n-------------------------------------------------------------------\nRU: {translatorr.translate(resp)}")
+
+
+async def fetch_image(url):
+    api = func.API_r()
+    response = await api.get_request(url)
+    return response.content
+
+# ISS location
+@bot.slash_command()
+async def iss_location(ctx):
+    await ctx.respond("Обработка...")
+    try:
+        iss = await func.get_iss_loc()
+        api_url = await func.link_iss_map_form(iss['latitude'], iss['longitude'])
+        image_data = await fetch_image(api_url)
+        files = discord.File(BytesIO(image_data), filename='image.png')
+        await ctx.send(file=files)
+    except Exception as e:
+        await ctx.send(f"Ошибка! Подробнее: {e}")
+
+
+# Количество людей в космосе
+@bot.slash_command()
+async def people_in_space(ctx):
+    await ctx.respond("Обработка...")
+    url = "http://api.open-notify.org/astros.json"
+    try:
+        api = func.API_r()
+        resp = await api.get_request_json_raw(url)
+        people = ""
+        for i in resp['people']:
+            people += f"* Имя: {i['name']}, станция: {i['craft']}\n"
+        final = f"На данный момент в космосе {str(resp['number'])} человек вот их список:\n{people}"
+        await ctx.send(final)
+    except Exception as e:
+        await ctx.send(f"Ошибка! Подробнее: {e}")
 
 
 
+#############################
+###  HISTORY OF MESSAGES  ###
+#############################
 
-
-
-
-####################
-####################
 
 @bot.listen()
 async def on_message(message: discord.Message):
