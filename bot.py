@@ -6,7 +6,7 @@ import WikiLib as wl
 import othr_func as func
 from translate import Translator
 import asyncio
-import httpx, requests
+import httpx
 import collections
 import feedparser, urllib
 import pytz
