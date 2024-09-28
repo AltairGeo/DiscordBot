@@ -10,7 +10,6 @@ import httpx
 import collections
 import feedparser, urllib
 import pytz
-from bs4 import BeautifulSoup
 from io import BytesIO
 
 
