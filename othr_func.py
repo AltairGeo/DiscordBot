@@ -107,5 +107,5 @@ async def get_iss_loc():
 
 
 async def link_iss_map_form(latitude: str, longitude: str):
-    api_url = f"https://static-maps.yandex.ru/v1?apikey={apikey_yandex_map_static}&ll={longitude},{latitude}&z=1&size=450,450&theme=dark&pt={longitude},{latitude},round"
+    api_url = f"https://static-maps.yandex.ru/v1?apikey={apikey_yandex_map_static}&ll={longitude},{latitude}&z=2&size=450,450&theme=dark&pt={longitude},{latitude},round"
     return api_url

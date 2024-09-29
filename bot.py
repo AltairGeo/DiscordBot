@@ -89,7 +89,7 @@ async def meduza_news(num_of_test_char, post_query, httpx_client):
             date = i['published']
             date_r = date.replace("+0300", "")
             link = i['link']
-            news_text = f'{title}\n{summary_ready}\n\n{date_r}\n{link}\n\n_'
+            news_text = f'## {title}\n>>> {summary_ready}\n\n{date_r}\n[Ссылка на статью.]{link}\n_'
             head = news_text[:num_of_test_char]
             if head in post_query:
                 continue
@@ -313,12 +313,13 @@ async def people_in_space(ctx):
     await ctx.respond("Обработка...")
     url = "http://api.open-notify.org/astros.json"
     try:
+        empty = " "
         api = func.API_r()
         resp = await api.get_request_json_raw(url)
-        people = ""
+        people = "```\n+---------------------------+---------------------------------------+\n|           Имя             |               Станция                 |\n+---------------------------+---------------------------------------+\n"
         for i in resp['people']:
-            people += f"* Имя: {i['name']}, станция: {i['craft']}\n"
-        final = f"На данный момент в космосе {str(resp['number'])} человек вот их список:\n{people}"
+            people += f"|{empty * 3}{i['name']}{empty * (24 - len(i['name']))}|{empty * 3}{i['craft']}{empty * (36 - len(i['craft']))}|\n"
+        final = f"# На данный момент в космосе {str(resp['number'])} человек вот их список:satellite_orbital::\n{people}+---------------------------+---------------------------------------+```"
         await ctx.send(final)
     except Exception as e:
         await ctx.send(f"Ошибка! Подробнее: {e}")
