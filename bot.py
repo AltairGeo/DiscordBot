@@ -89,7 +89,7 @@ async def meduza_news(num_of_test_char, post_query, httpx_client):
             date = i['published']
             date_r = date.replace("+0300", "")
             link = i['link']
-            news_text = f'## {title}\n>>> {summary_ready}\n\n{date_r}\n[Ссылка на статью.]{link}\n_'
+            news_text = f'## {title}\n>>> {summary_ready}\n\n{date_r}\n[Ссылка на статью.]({link})\n_'
             head = news_text[:num_of_test_char]
             if head in post_query:
                 continue
