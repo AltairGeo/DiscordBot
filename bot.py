@@ -11,7 +11,7 @@ import collections
 import feedparser, urllib
 import pytz
 from io import BytesIO
-
+from typing import Optional
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -114,17 +114,13 @@ async def gtn(ctx):
         await ctx.send('Nope, try again.')
 
 
-
-#@bot.slash_command()
-#async def ping(ctx):
-#    await ctx.respond("pong")
-
 # Цена доллара
 @bot.slash_command()
 async def dollarcost(ctx):
     cost = await func.get_dollar_cost(None)
     stor = f"1$ = {cost}₽"
     await ctx.respond(stor)
+
 
 # Дать предупреждение
 @bot.slash_command(description="Дать предупреждение пользователю.")
@@ -167,10 +163,12 @@ async def delwarn(ctx, id_warn: int):
     if right == 0:
         await ctx.respond("У вас нет прав на выполнение данной команды!")
 
+
 # Все предупреждения пользователя
 @bot.slash_command()
 async def alluserwarn(ctx, name: discord.Member):
     await ctx.respond(warn.all_user_warn(name.id))
+
 
 # мут
 @bot.slash_command(description="Дать мут на определённое кол-во часов.")
@@ -202,20 +200,27 @@ async def grws(ctx):
         count = 0
         for i in res:
             count += 1
-            if count >= 1500:
+            if count >= 1000:
                 result += "..."
                 break
             result += i
         result += f"\n {link}"
-        await ctx.respond(result)
+        
+        embed = discord.Embed(title='Случайная статья из википедии', color=discord.Color.green())
+        embed.add_field(name='Содержимое', value=result, inline=False)
+        try:       
+            embed.set_image(url=wiki_engine.get_picture())
+        except Exception as e:
+            print(e)
+        await ctx.respond(embed=embed)
     else:
         await ctx.respond("Вики-Модуль выключен!")
-
 
 
 @bot.slash_command()
 async def translate(ctx, message: str):
     await ctx.respond(view=TranslatorView(messages=message))
+
 
 # Запрос к нейросети нужен ollama сервер, и указать модель в config.py
 @bot.slash_command()
@@ -235,6 +240,17 @@ async def ai_forget_context(ctx):
 # Разное #
 ##########
 
+
+@bot.slash_command()
+async def flip(ctx):
+    await ctx.respond(await func.flip())
+
+
+@bot.slash_command()
+async def members_count(ctx):
+    await ctx.respond(f"На сервере {ctx.guild.member_count}")
+
+
 @bot.slash_command()
 async def fox(ctx):
     ap = func.API_r()
@@ -248,11 +264,13 @@ async def yes_gif(ctx):
     resp = await ap.get_request_json(atr="image", url="https://yesno.wtf/api?force=yes")
     await ctx.respond(resp)
 
+
 @bot.slash_command()
 async def no_gif(ctx):
     ap = func.API_r()
     resp = await ap.get_request_json(atr="image", url="https://yesno.wtf/api?force=no")
     await ctx.respond(resp)
+
 
 @bot.slash_command()
 async def weather(ctx, city: str):
@@ -279,6 +297,7 @@ async def fact_about_number(ctx, num: int):
     except Exception as e:
         await ctx.send(f"Ошибка! {e}")
 
+
 #https://catfact.ninja/fact
 @bot.slash_command()
 async def cat_fact(ctx):
@@ -292,6 +311,7 @@ async def fetch_image(url):
     api = func.API_r()
     response = await api.get_request(url)
     return response.content
+
 
 # ISS location
 @bot.slash_command()
@@ -324,6 +344,7 @@ async def people_in_space(ctx):
     except Exception as e:
         await ctx.send(f"Ошибка! Подробнее: {e}")
 
+
 @bot.slash_command()
 async def i_moder(ctx):
     resp = await func.moder(ctx)
@@ -344,6 +365,7 @@ async def month_statistic(ctx, year: int, month: int):
     else:
         await ctx.respond("У вас нет прав на выполнение данной команды!")
 
+
 @bot.slash_command()
 async def channel_statistics(ctx, year: int, month: int):
     moder = await func.moder(ctx)
@@ -358,12 +380,10 @@ async def channel_statistics(ctx, year: int, month: int):
         await ctx.respond("У вас нет прав на выполнение данной команды!")
 
 
-
-
-
 ##############################################
-# Получение всех сообщений за день           #
+###   Получение всех сообщений за день     ###
 ##############################################
+
 
 @bot.slash_command()
 async def get_day_hist(ctx, day: int, mounth: int, year: int):
@@ -416,6 +436,137 @@ async def on_message_delete(message: discord.Message):
     #print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(datetime.now()))
     db.commit()
     db.close()
+
+
+# Как делать Embed
+
+#@bot.slash_command()
+#async def send_embed(ctx):
+#    ap = func.API_r()
+#    # Создание embed
+#    embed = discord.Embed(title='Пример Embed', description='Это пример embed-сообщения.', color=discord.Color.blue())
+#    # Добавление поля
+#    embed.add_field(name='Поле 1', value='Значение поля 1', inline=False)
+#    
+#    # Добавление изображения
+#    embed.set_image(url=await ap.get_request_json(atr="image", url="https://randomfox.ca/floof/"))
+#    
+#    # Добавление футера
+#    embed.set_footer(text='Это футер embed-сообщения.')
+#    
+#    # Отправка embed
+#   
+#  await ctx.respond(embed=embed)
+
+
+@bot.slash_command()
+async def get_my_avatar(ctx):
+    embed = discord.Embed(title=f'Аватар пользователя {ctx.author.name}',color=discord.Color.green())
+    embed.set_image(url=ctx.author.avatar)
+    await ctx.respond(embed=embed)
+
+
+@bot.slash_command()
+async def get_server_avatar(ctx):
+    embed = discord.Embed(title=f'Аватар сервера {ctx.guild.name}',color=discord.Color.green())
+    if ctx.guild.icon == None:
+        await ctx.respond("У сервера нет иконки.")
+        return None
+    embed.set_image(url=ctx.guild.icon)
+    await ctx.respond(embed=embed)
+
+
+############
+# Опросы   #
+############
+
+@bot.slash_command(name='poll')
+async def create_poll(ctx, question: str,option1: str, option2:str, option3: Optional[str] = None, option4: Optional[str] = None, option5: Optional[str] = None, option6: Optional[str] = None, option7: Optional[str] = None, option8: Optional[str] = None, option9: Optional[str] = None, option10: Optional[str] = None):
+    if await func.moder(ctx) == True:
+        await ctx.respond("Обработка...")
+        reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '10️⃣']
+        options = []
+        reacts = []
+        options.append(option1)
+        options.append(option2)
+        reacts.append(reactions[0])
+        reacts.append(reactions[1])
+
+        if option3 is not None:
+            options.append(option3)
+            reacts.append(reactions[2])
+        if option4 is not None:
+            options.append(option4)
+            reacts.append(reactions[3])
+        if option5 is not None:
+            options.append(option5)
+            reacts.append(reactions[4])
+        if option6 is not None:
+            options.append(option6)
+            reacts.append(reactions[5])
+        if option7 is not None:
+            options.append(option7)
+            reacts.append(reactions[6])
+        if option8 is not None:
+            options.append(option8)
+            reacts.append(reactions[7])
+        if option9 is not None:
+            options.append(option9)
+            reacts.append(reactions[8])
+        if option10 is not None:
+            options.append(option10)
+            reacts.append(reactions[9])
+
+        desc = ""
+        counter = 0
+        for i in options:
+            desc += f"{reacts[counter]} {options[counter]}\n"
+            counter += 1
+        
+        embed = discord.Embed(title=question, description=desc, color=discord.Color.green())
+        message = await ctx.send(embed=embed)
+        for reaction in reacts:
+            await message.add_reaction(reaction)
+    else:
+        ctx.respond("У вас нет прав на выполнение данной команды!")
+
+
+@bot.slash_command()
+async def show_poll(ctx, message_id: str):
+    if await func.moder(ctx) == True:
+        try:
+            message = await ctx.channel.fetch_message(message_id)
+        except discord.HTTPException:
+            await ctx.respond('Сообщение не найдено.')
+            return None
+
+        reactions = message.reactions
+        results = {}
+
+        for reaction in reactions:
+            results[reaction.emoji] = reaction.count - 1  # Вычитаем 1, чтобы не учитывать реакцию бота
+
+        x = []
+        y = []
+        co = 0
+        react = ["Кандидат 1", "Кандидат 2", "Кандидат 3", "Кандидат 4", "Кандидат 5", "Кандидат 6", "Кандидат 7", "Кандидат 8", "Кандидат 9", "Кандидат 10"]
+        for reaction, count in results.items():
+            x.append(react[co])
+            y.append(count)
+            co += 1
+
+        await ctx.respond("Обработка...")
+        resp = await func.stolb(x, y)
+        if resp == None:
+            await ctx.send("Ничего не найдено.")
+        else:
+            await ctx.send(file=discord.File(resp, filename='poll.png'))
+    else:
+        await ctx.respond("У вас нет прав на использование данной команды.")
+    
+
+
+
 
 if __name__ == "__main__":
     func.db_hist_init()

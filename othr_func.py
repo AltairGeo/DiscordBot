@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-import config
+import config, random
 from openai import OpenAI
 import sqlite3 as sq
 from config import path_to_hist_db, apikey_yandex_map_static
@@ -227,6 +227,26 @@ async def get_channels_statistic(mounth: int, year: int):
         counts.append(i[1])
     plt.pie(counts, labels=labels)
     plt.title("Распределение сообщений по каналам сервера")
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    plt.close()
+    return buf
+
+
+async def flip():
+    if random.randint(1, 2) == 2:
+        return "Орёл"
+    else:
+        return "Решка"
+
+
+async def stolb(x, y):
+    plt.bar(x, y, label='Количество голосов', color='#2f6422') #Параметр label позволяет задать название величины для легенды
+    plt.xlabel('Варианты')
+    plt.ylabel('Кол-во голосов')
+    plt.title('Итоги')
+    plt.legend()
     buf = BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
