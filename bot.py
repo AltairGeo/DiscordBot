@@ -324,6 +324,59 @@ async def people_in_space(ctx):
     except Exception as e:
         await ctx.send(f"Ошибка! Подробнее: {e}")
 
+@bot.slash_command()
+async def i_moder(ctx):
+    resp = await func.moder(ctx)
+    await ctx.respond(str(resp))
+
+
+# Статистика сообщений за месяц
+@bot.slash_command()
+async def month_statistic(ctx, year: int, month: int):
+    moder = await func.moder(ctx)
+    if moder == True:
+        await ctx.respond("Обработка...")
+        resp = await func.get_count_hist_for_mouth(month, year)
+        if resp == None:
+            await ctx.respond("Ничего не найдено.")
+        else:
+            await ctx.send(file=discord.File(resp, filename='hist_for_mouth.png'))
+    else:
+        await ctx.respond("У вас нет прав на выполнение данной команды!")
+
+@bot.slash_command()
+async def channel_statistics(ctx, year: int, month: int):
+    moder = await func.moder(ctx)
+    if moder == True:
+        await ctx.respond("Обработка...")
+        resp = await func.get_channels_statistic(month, year)
+        if resp == None:
+            await ctx.respond("Ничего не найдено.")
+        else:
+            await ctx.send(file=discord.File(resp, filename='hist_for_mouth.png'))
+    else:
+        await ctx.respond("У вас нет прав на выполнение данной команды!")
+
+
+
+
+
+##############################################
+# Получение всех сообщений за день           #
+##############################################
+
+@bot.slash_command()
+async def get_day_hist(ctx, day: int, mounth: int, year: int):
+    await ctx.respond("Обработка...")
+    moder = await func.moder(ctx)
+    if moder == True:
+        ls = await func.get_hist_for_day(day, mounth, year)
+        if ls == []:
+            await ctx.send("Ничего не найдено.")
+        for i in ls:
+            await ctx.send(f"**Author:** {i['author']}\n**Content:** ```{i['message']}```\n**Channel:** {i['channel']}\n**Time:**{i['time']}")
+    else:
+        ctx.respond("У вас нет прав на выполнение данной команды!")
 
 
 #############################
@@ -334,17 +387,21 @@ async def people_in_space(ctx):
 @bot.listen()
 async def on_message(message: discord.Message):
     author, author_id, content, chanel, chanel_id = message.author.name, message.author.id, message.content, message.channel, message.channel.id
-    moscow = pytz.timezone('Europe/Moscow')
-    db = func.db_history()
-    cur = db.cursor()
-    cur.execute("""
-    INSERT INTO history (
-        AUTHOR, AUTHOR_ID, CONTENT, CHANNEL, CHANNEL_ID, TIME, ACTION
-                ) VALUES (?, ?, ?, ?, ?, ?, "WRITE")
-    """, (str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow))))
-    #print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow)))
-    db.commit()
-    db.close()
+    if author == "PyBot":
+        pass
+    else:
+        moscow = pytz.timezone('Europe/Moscow')
+        db = func.db_history()
+        cur = db.cursor()
+        cur.execute("""
+        INSERT INTO history (
+            AUTHOR, AUTHOR_ID, CONTENT, CHANNEL, CHANNEL_ID, TIME, ACTION
+                    ) VALUES (?, ?, ?, ?, ?, ?, "WRITE")
+        """, (str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow))))
+        #print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow)))
+        db.commit()
+        db.close()
+    
 
 @bot.listen()
 async def on_message_delete(message: discord.Message):

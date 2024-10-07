@@ -3,3 +3,5 @@
 *.db
 .env
 __pychache__
+hist.db
+warns.db
