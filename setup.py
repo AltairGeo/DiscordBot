@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='ds-bot',
@@ -8,6 +8,6 @@ setup(
     description='My discord bot',
     long_description='My own discord bot. Replace for Dyno',
     url='https://github.com/AltairGeo/DiscordBot',
-    packages=['ds-bot'],
+    packages=find_packages(),
     install_requires=open('requirements.txt').read().splitlines(),
 )
