@@ -35,7 +35,7 @@ You can just run it manually with the ```python bot.py command```, but I recomme
   After=multi-user.target
   
   [Service]
-  ExecStart=/<path_to_your_bot_folder>/DiscordBot/.venv/bin/python3 /<path_to_your_bot_folder>/DiscordBot/bot.py
+  ExecStart=/<path_to_your_bot_folder>/DiscordBot/.venv/bin/python3 /<path_to_your_bot_folder>/DiscordBot/src/bot.py
   Restart=always
   
   [Install]
