@@ -1,5 +1,0 @@
-WikiLib
-bot
-config
-othr_func
-warn

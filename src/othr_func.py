@@ -186,7 +186,8 @@ async def get_count_hist_for_mouth(mounth: int, year: int):
     counts = []
 
     for i in data:
-        datas.append(i[0][5: ])
+        print(f"{i}    {i[0][-2: ]}")
+        datas.append(i[0][-2: ])
         counts.append(i[1])
     buf = BytesIO()
     plt.plot(datas, counts, color='green', marker='.', markersize=7)

@@ -8,7 +8,7 @@ from translate import Translator
 import asyncio
 import httpx
 import collections
-import feedparser, urllib
+import feedparser
 import pytz
 from io import BytesIO
 from typing import Optional
@@ -165,7 +165,7 @@ async def delwarn(ctx, id_warn: int):
 
 
 # Все предупреждения пользователя
-@bot.slash_command()
+@bot.slash_command(description="Показать все предупреждения пользователя")
 async def alluserwarn(ctx, name: discord.Member):
     await ctx.respond(warn.all_user_warn(name.id))
 
@@ -188,7 +188,7 @@ async def mute(ctx, name: discord.Member, hours: int):
 
 
 #Модуль рандомной статьи из вики 
-@bot.slash_command()
+@bot.slash_command(description="Рандомная статья из википедии")
 async def grws(ctx):
     if config.ENABLE_WIKI_MODULE == 1:
         wiki_engine = wl.WikiLib(config.WIKI_URL)
@@ -217,24 +217,29 @@ async def grws(ctx):
         await ctx.respond("Вики-Модуль выключен!")
 
 
-@bot.slash_command()
+@bot.slash_command(description="Переводчик")
 async def translate(ctx, message: str):
     await ctx.respond(view=TranslatorView(messages=message))
 
 
 # Запрос к нейросети нужен ollama сервер, и указать модель в config.py
-@bot.slash_command()
+@bot.slash_command(description="ИИ")
 async def ai(ctx, prompt: str):
-    await ctx.respond("Обработка...")
-    async with ctx.channel.typing():
-        resp = func.ai_resp(prompt)
-    await ctx.send(resp)
+    if config.ENABLE_OLLAMA_MODULE == 1:
+        await ctx.respond("Обработка...")
+        async with ctx.channel.typing():
+            resp = func.ai_resp(prompt)
+        await ctx.send(resp)
+    else:
+        await ctx.respond("Ollama модуль выключен.")
 
 
 @bot.slash_command()
 async def ai_forget_context(ctx):
-    await ctx.send(func.ai_forget())
-
+    if config.ENABLE_OLLAMA_MODULE == 1:
+        await ctx.send(func.ai_forget())
+    else:
+        await ctx.respond("Ollama модуль выключен.")
 
 ##########
 # Разное #
@@ -246,7 +251,7 @@ async def flip(ctx):
     await ctx.respond(await func.flip())
 
 
-@bot.slash_command()
+@bot.slash_command(description="Количество участников на сервере.")
 async def members_count(ctx):
     await ctx.respond(f"На сервере {ctx.guild.member_count}")
 
@@ -274,14 +279,32 @@ async def no_gif(ctx):
 
 @bot.slash_command()
 async def weather(ctx, city: str):
+    ct = city
     city = city.replace(" ", "+")
-    url = f"https://wttr.in/{city}?Q0nT&lang=ru"
+    url = f"https://wttr.in/{city}?Q0n&lang=ru"
     api = func.API_r()
     try:
+        await ctx.respond("Обработка...")
         resp = await api.get_request(url)
-        await ctx.respond(f"```{resp.text}```") 
+        embed = discord.Embed(title=f'Погода в {ct}', description=f"```{resp.text}```", color=discord.Color.green())
+        await ctx.send(embed=embed)
     except Exception as e:
-        await ctx.send(f"Ошибка! {resp}")
+        await ctx.send(f"Ошибка: {e}")
+
+
+@bot.slash_command()
+async def moon(ctx):
+    url = "https://wttr.in/moon?T0&lang=ru"
+    api = func.API_r()
+    try:
+        await ctx.respond("Обработка...")
+        resp = await api.get_request(url)
+        print(resp.text)
+        #embed = discord.Embed(title=f'Фаза луны', description=f"```ansi\n{resp.text}```", color=discord.Color.green())
+        #await ctx.send(embed=embed)
+        await ctx.send(f"```ansi\n{resp.text}```")
+    except Exception as e:
+        await ctx.send(f"Ошибка: {e}")
 
 
 #http://numbersapi.com/
@@ -340,6 +363,7 @@ async def people_in_space(ctx):
         for i in resp['people']:
             people += f"|{empty * 3}{i['name']}{empty * (24 - len(i['name']))}|{empty * 3}{i['craft']}{empty * (36 - len(i['craft']))}|\n"
         final = f"# На данный момент в космосе {str(resp['number'])} человек вот их список:satellite_orbital::\n{people}+---------------------------+---------------------------------------+```"
+    
         await ctx.send(final)
     except Exception as e:
         await ctx.send(f"Ошибка! Подробнее: {e}")
@@ -564,8 +588,7 @@ async def show_poll(ctx, message_id: str):
     else:
         await ctx.respond("У вас нет прав на использование данной команды.")
     
-
-
+##########################################################################
 
 
 if __name__ == "__main__":
