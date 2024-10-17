@@ -16,7 +16,11 @@ from log import logging
 
 intents = discord.Intents.default()
 intents.message_content = True
-
+intents.guilds = True
+intents.members = True
+intents.guild_messages = True
+intents.presences = True
+intents.bans = True
 
 #Класс выбора для переводчика
 class TranslatorView(discord.ui.View):
@@ -62,12 +66,27 @@ async def on_ready():
     await meduza_news(num_of_test_char, post_q, httpx_client)
     logging.info("Meduza parser is started")
 
+@bot.event
+async def on_member_remove(member):
+    logging.info(f"User {member.name} leave a server")
+    channel = member.guild.system_channel
+    embed = discord.Embed(title='**Покинул**', description=f"Участник *{member.name}* покинул сервер", color=discord.Color.red())
+    await channel.send(embed=embed)
+
 
 @bot.event
-async def on_member_join(member):
-    await member.send(
-        f'Добро пожаловать на сервер, {member.mention}!'
-    )
+async def on_member_ban(guild, user):
+    logging.info(f"User {user.name} was banned on server {guild.name}")
+    channel = guild.system_channel
+    embed = discord.Embed(title='**ЗАБАНЕН**', description=f"Участник *{user.name}* был забанен на сервере", color=discord.Color.red())
+    await channel.send(embed=embed)
+
+
+@bot.event
+async def on_member_join(member: discord.member.Member):
+    logging.info("Member joins!")
+    embed = discord.Embed(title="**Новый участник!**", description=f"Добро пожаловать на сервер, {member.mention}!", color=discord.Color.green())
+    await member.guild.system_channel.send(embed=embed)
 
 
 # Парсинг rss ленты meduza.io
@@ -650,8 +669,11 @@ async def show_poll(ctx, message_id: str):
 
 
 if __name__ == "__main__":
-    logging.info("hist_db init...")
-    func.db_hist_init()
-    logging.info("bot starting...")
-    bot.run(config.TOKEN)
+    try:
+        logging.info("hist_db init...")
+        func.db_hist_init()
+        logging.info("bot starting...")
+        bot.run(config.TOKEN)
+    except Exception as e:
+        print(f"ERROR:{e}")
 
