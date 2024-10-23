@@ -172,7 +172,6 @@ async def get_count_hist_for_mouth(mounth: int, year: int):
     counts = []
 
     for i in data:
-        print(f"{i}    {i[0][-2: ]}")
         datas.append(i[0][-2: ])
         counts.append(i[1])
     buf = BytesIO()
@@ -217,12 +216,10 @@ async def get_channels_statistic(mounth: int, year: int):
         labels.append(i[0])
         counts.append(i[1])
     plt.pie(counts, labels=labels)
-    plt.title("Распределение сообщений по каналам сервера")
+    plt.title(f"Распределение сообщений по каналам сервера за {year}-{mounth}")
     buf = BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
-    conn.close()
-    cursor.close()
     plt.close()
     return buf
 

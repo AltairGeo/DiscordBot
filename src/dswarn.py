@@ -51,17 +51,13 @@ def all_user_warn(user_id):
     SELECT * FROM warns
     WHERE USER_ID = ?
     """, (user_id, ))
-    sstring = ""
+    resp = []
     for i in cursor:
-        str_warn = " "
-        for o in i:
-            str_warn += str(o)
-            str_warn += " "
-        sstring += f"{str_warn}\n"
+        resp.append(i)
+    
     cursor.close()
     db.close()
-    return sstring
-
+    return resp
 
 def get_count_warn():
     db = db_connect()
@@ -91,8 +87,7 @@ def counter(count):
 async def warn_system(ids):
     list_of_warns = get_count_warn()
     for i in list_of_warns:
-        print(i[0])
         if i[0] == ids:
             result = counter(i[1])
-            print(f"Результат: {result}")
             return result
+

@@ -157,7 +157,7 @@ async def addwarn(ctx: discord.ApplicationContext):
     if await func.moder(ctx=ctx):
         await ctx.respond("Выбор пользователя:", view=uui.TargetSelectView())
     else:
-        ctx.respond("У вас нет прав на выполнение данной команды!")
+        await ctx.respond("У вас нет прав на выполнение данной команды!")
 
 
 # Дать предупреждение
@@ -189,7 +189,7 @@ async def addwarn_legacy(ctx: discord.ApplicationContext, name: discord.Member, 
 
 
 @bot.slash_command(description="Удалить предупреждение у пользователя по id.")
-async def delwarn(ctx, id_warn: int):
+async def delwarn_legacy(ctx, id_warn: int):
     logging.info("the /delwarn was used")
     author_roles = ctx.author.roles
     mod = config.MOD_ID
@@ -206,14 +206,21 @@ async def delwarn(ctx, id_warn: int):
 
 # Все предупреждения пользователя
 @bot.slash_command(description="Показать все предупреждения пользователя")
-async def alluserwarn(ctx, name: discord.Member):
+async def alluserwarn(ctx: discord.ApplicationContext, name: discord.Member):
     logging.info("the /alluserwarn was used")
-    await ctx.respond(dswarn.all_user_warn(name.id))
+    if await func.moder(ctx):
+        await ctx.respond("Обработка!")
+        for i in dswarn.all_user_warn(name.id):
+            embed = discord.Embed(title=f"{i[2]}", description=f"Причина: {i[3]}", color=discord.Color.dark_green())
+            embed.set_footer(text=f"warn_id: {i[0]}")
+            await ctx.send(embed=embed, view=uui.AllUserWarns(i[0]))
+    else:
+        await ctx.send("У вас нет прав на выполнение данной команды!")
 
 
 # мут
 @bot.slash_command(description="Дать мут на определённое кол-во часов.")
-async def mute(ctx, name: discord.Member, hours: int):
+async def mute(ctx: discord.ApplicationContext, name: discord.Member, hours: int):
     logging.info("the /mute was used")
     delta = timedelta(hours=hours)
     author_roles = ctx.author.roles
@@ -222,9 +229,11 @@ async def mute(ctx, name: discord.Member, hours: int):
     for i in author_roles:
         i = i.id
         if str(i) == mod:
+            await ctx.respond("Обработка...")
             await name.timeout_for(delta)
             logging.debug(f"{name.name} is get mute for {hours} hours.")
-            await ctx.respond(f"Дан мут пользователю {name.name}!")
+            embed = discord.Embed(title=f"{name.name}", description=f"Выдан мут на {hours} часов.", color=discord.Color.red())
+            await ctx.send(embed=embed)
             right = 1
     if right == 0:
         await ctx.respond("У вас нет прав на выполнение данной команды!")
@@ -244,7 +253,7 @@ async def grws(ctx):
         count = 0
         for i in res:
             count += 1
-            if count >= 900:
+            if count >= 700:
                 result += "..."
                 break
             result += i
@@ -282,7 +291,7 @@ async def flip(ctx):
 @bot.slash_command(description="Количество участников на сервере.")
 async def members_count(ctx):
     logging.info("the /membrers_count was used")
-    await ctx.respond(f"На сервере {ctx.guild.member_count}")
+    await ctx.respond(f"На сервере {ctx.guild.member_count} человек.")
 
 
 @bot.slash_command()
@@ -366,13 +375,14 @@ async def fact_about_number(ctx, num: int):
 
 #https://catfact.ninja/fact
 @bot.slash_command()
-async def cat_fact(ctx):
+async def cat_fact(ctx: discord.ApplicationContext):
+    await ctx.respond("Обработка...")
     logging.info("the /cat_fact was used")
     api = func.API_r()
     logging.debug("cat_fact: send request to catfact.ninja/fact")
     resp = await api.get_request_json(atr="fact", url="https://catfact.ninja/fact")
     translatorr = Translator(from_lang='en', to_lang='ru')
-    await ctx.respond(f"EN: {resp}\n-------------------------------------------------------------------\nRU: {translatorr.translate(resp)}")
+    await ctx.send(f"EN: {resp}\n-------------------------------------------------------------------\nRU: {translatorr.translate(resp)}")
 
 
 async def fetch_image(url):

@@ -41,10 +41,22 @@ class TargetSelectView(discord.ui.View):
 
             await interaction.response.send_modal(AddWarnModal(title="Reason",people=people))
         else:
-            await interaction.message.delete()
+            pass
+            
 
 
 
         
 
+class AllUserWarns(discord.ui.View):
+    def __init__(self, warn_id):
+        super().__init__()
+        self.warn_id = warn_id
 
+    @discord.ui.button(label="Удалить!", style=discord.ButtonStyle.danger, emoji="🗑")
+    async def button_callback(self, button, interaction: discord.Interaction):
+        if await moder_for_user(interaction.user) == True:
+            await interaction.message.delete()
+            dswarn.delete_warn(self.warn_id)        
+        else:
+            pass
