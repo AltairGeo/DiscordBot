@@ -132,6 +132,17 @@ async def moder(ctx):
             return True
     if right == 0:
         return False
+    
+async def moder_for_user(user):
+    author_roles = user.roles
+    mod = config.MOD_ID
+    right = 0
+    for i in author_roles:
+        i = i.id
+        if str(i) == mod:
+            return True
+    if right == 0:
+        return False
 
 
 

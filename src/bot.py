@@ -4,7 +4,7 @@ from discord.ext import tasks
 import discord.ext.commands
 import config
 import discord.ext
-import warn
+import dswarn
 import WikiLib as wl
 import othr_func as func
 from translate import Translator
@@ -16,15 +16,10 @@ import pytz
 from io import BytesIO
 from typing import Optional
 from log import logging
+import discord_ui as uui
 
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.guilds = True
-intents.members = True
-intents.guild_messages = True
-intents.presences = True
-intents.bans = True
+intents = discord.Intents.all()
 
 #Класс выбора для переводчика
 class TranslatorView(discord.ui.View):
@@ -157,9 +152,17 @@ async def dollarcost(ctx):
     await ctx.respond(stor)
 
 
+@bot.slash_command(description="Дать предупреждение пользователю.")
+async def addwarn(ctx: discord.ApplicationContext):
+    if await func.moder(ctx=ctx):
+        await ctx.respond("Выбор пользователя:", view=uui.TargetSelectView())
+    else:
+        ctx.respond("У вас нет прав на выполнение данной команды!")
+
+
 # Дать предупреждение
 @bot.slash_command(description="Дать предупреждение пользователю.")
-async def addwarn(ctx, name: discord.Member, reason: str):
+async def addwarn_legacy(ctx: discord.ApplicationContext, name: discord.Member, reason: str):
     logging.info("the /addwarn was used")
     author_roles = ctx.author.roles
     mod = config.MOD_ID
@@ -168,23 +171,21 @@ async def addwarn(ctx, name: discord.Member, reason: str):
         i = i.id
         if str(i) == mod:
             user_id = name.id
-            user_name = name.name
-            await ctx.respond(warn.add_warn(user_id, user_name, reason))
+            user_name = name.name 
+            await ctx.respond(dswarn.add_warn(user_id, user_name, reason))
             logging.debug(f"Add warn to {user_name} for reason: {reason}")
-            right = 1
-    if right == 0:
-        await ctx.respond("У вас нет прав на выполнение данной команды!")
-
-    list_of_warns = warn.get_count_warn()
-    for i in list_of_warns:
-        if i[0] == name.id:
-            result = warn.counter(i[1])
+            result = await dswarn.warn_system(user_id)
             if result == 100:
                 await name.timeout_for(timedelta(minutes=20))
             elif result == 105:
                 await name.timeout_for(timedelta(hours=6))
             elif result == 200:
-                await name.ban(reason="16 предупреждений")
+                await name.timeout_for(reason="16 предупреждений")
+            right = 1
+    if right == 0:
+        await ctx.respond("У вас нет прав на выполнение данной команды!")
+
+    
 
 
 @bot.slash_command(description="Удалить предупреждение у пользователя по id.")
@@ -196,7 +197,7 @@ async def delwarn(ctx, id_warn: int):
     for i in author_roles:
         i = i.id
         if str(i) == mod:
-            await ctx.respond(warn.delete_warn(id_warn))
+            await ctx.respond(dswarn.delete_warn(id_warn))
             logging.debug(f"Deleted warning with id = {id_warn}")
             right = 1
     if right == 0:
@@ -207,7 +208,7 @@ async def delwarn(ctx, id_warn: int):
 @bot.slash_command(description="Показать все предупреждения пользователя")
 async def alluserwarn(ctx, name: discord.Member):
     logging.info("the /alluserwarn was used")
-    await ctx.respond(warn.all_user_warn(name.id))
+    await ctx.respond(dswarn.all_user_warn(name.id))
 
 
 # мут
