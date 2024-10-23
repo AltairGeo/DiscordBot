@@ -52,6 +52,8 @@ You can just run it manually with the ```python bot.py command```, but I recomme
 # Docker (Recommended)
 
 ```
+git clone https://github.com/AltairGeo/DiscordBot
+cd DiscordBot
 docker build -t <your_image_name> .
 
 docker run -e DISCORD_TOKEN=<your_token> \
