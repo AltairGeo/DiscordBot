@@ -7,6 +7,5 @@ RUN pip install -r requirements.txt
 COPY . /bot
 WORKDIR /bot
 
-ENV DISCORD_TOKEN ""
 
 CMD ["python", "./src/bot.py"]
