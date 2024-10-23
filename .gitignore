@@ -1,7 +1,7 @@
-.venv
+__pychache__/
+.venv/
 *.log
 *.db
 .env
-__pychache__
 hist.db
 warns.db
