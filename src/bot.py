@@ -1,6 +1,9 @@
 from datetime import timedelta, datetime
 import discord
+from discord.ext import tasks
+import discord.ext.commands
 import config
+import discord.ext
 import warn
 import WikiLib as wl
 import othr_func as func
@@ -13,6 +16,7 @@ import pytz
 from io import BytesIO
 from typing import Optional
 from log import logging
+
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -54,6 +58,9 @@ class TranslatorView(discord.ui.View):
 bot = discord.Bot(intents=intents)
 
 
+
+
+
 #Действия при запуске бота
 @bot.event
 async def on_ready():
@@ -63,6 +70,7 @@ async def on_ready():
     httpx_client = httpx.AsyncClient()
     num_of_test_char = 70
     # вызов асинхронного парсера rss ленты и выставление параметров
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.custom, name="0_0"))    
     await meduza_news(num_of_test_char, post_q, httpx_client)
     logging.info("Meduza parser is started")
 
@@ -70,7 +78,7 @@ async def on_ready():
 async def on_member_remove(member):
     logging.info(f"User {member.name} leave a server")
     channel = member.guild.system_channel
-    embed = discord.Embed(title='**Покинул**', description=f"Участник *{member.name}* покинул сервер", color=discord.Color.red())
+    embed = discord.Embed(title='', description=f"*{member.name}* покинул сервер", color=discord.Color.red())
     await channel.send(embed=embed)
 
 
@@ -78,7 +86,7 @@ async def on_member_remove(member):
 async def on_member_ban(guild, user):
     logging.info(f"User {user.name} was banned on server {guild.name}")
     channel = guild.system_channel
-    embed = discord.Embed(title='**ЗАБАНЕН**', description=f"Участник *{user.name}* был забанен на сервере", color=discord.Color.red())
+    embed = discord.Embed(title='**ЗАБАНЕН**', description=f"*{user.name}* был забанен на сервере", color=discord.Color.red())
     await channel.send(embed=embed)
 
 
@@ -87,6 +95,7 @@ async def on_member_join(member: discord.member.Member):
     logging.info("Member joins!")
     embed = discord.Embed(title="**Новый участник!**", description=f"Добро пожаловать на сервер, {member.mention}!", color=discord.Color.green())
     await member.guild.system_channel.send(embed=embed)
+
 
 
 # Парсинг rss ленты meduza.io
@@ -234,7 +243,7 @@ async def grws(ctx):
         count = 0
         for i in res:
             count += 1
-            if count >= 1000:
+            if count >= 900:
                 result += "..."
                 break
             result += i
@@ -257,28 +266,6 @@ async def grws(ctx):
 async def translate(ctx, message: str):
     logging.info("the /translate was used")
     await ctx.respond(view=TranslatorView(messages=message))
-
-
-# Запрос к нейросети нужен ollama сервер, и указать модель в config.py
-@bot.slash_command(description="ИИ")
-async def ai(ctx, prompt: str):
-    logging.info("the /ai was used")
-    if config.ENABLE_OLLAMA_MODULE == 1:
-        await ctx.respond("Обработка...")
-        async with ctx.channel.typing():
-            resp = func.ai_resp(prompt)
-        await ctx.send(resp)
-    else:
-        await ctx.respond("Ollama модуль выключен.")
-
-
-@bot.slash_command()
-async def ai_forget_context(ctx):
-    logging.info("the /ai_forget_context was used")
-    if config.ENABLE_OLLAMA_MODULE == 1:
-        await ctx.send(func.ai_forget())
-    else:
-        await ctx.respond("Ollama модуль выключен.")
 
 ##########
 # Разное #
@@ -400,13 +387,13 @@ async def iss_location(ctx):
     await ctx.respond("Обработка...")
     try:
         logging.debug("iss_location: try to request iss location")
-        iss = await func.get_iss_loc()
+        iss = await func.get_iss_loc() # Получение координат мкс
         logging.debug("iss_location: try to request url for map image")
-        api_url = await func.link_iss_map_form(iss['latitude'], iss['longitude'])
+        api_url = await func.link_iss_map_form(iss['latitude'], iss['longitude']) # формирование запроса к api yandex map static
         logging.debug("iss_location: try to fetcg map image")
-        image_data = await fetch_image(api_url)
-        files = discord.File(BytesIO(image_data), filename='image.png')
-        await ctx.send(file=files)
+        image_data = await fetch_image(api_url) # получение изображения карты
+        file = discord.File(BytesIO(image_data), filename='image.png')
+        await ctx.send("# Текущее расположение МКС.", file=file)
     except Exception as e:
         await ctx.send(f"Ошибка! Подробнее: {e}")
 
@@ -440,6 +427,24 @@ async def i_moder(ctx):
     await ctx.respond(str(resp))
 
 
+@bot.slash_command()
+async def top7_author_stat(ctx, year: int, month: int):
+    logging.info("the /author_stat was used")
+    moder = await func.moder(ctx)
+    
+    if moder == True:
+        await ctx.respond("Обработка...")
+        logging.debug("top7_author_stat: get hist for author")
+        resp = await func.get_author_stat(year=year, mounth=month)
+        if resp == None:
+            await ctx.send("Ничего не найдено.")
+        else:
+            await ctx.send(file=discord.File(resp, filename='author_stat.png'))
+    else:
+        await ctx.respond("У вас нет прав на выполнение данной команды!")
+
+
+
 # Статистика сообщений за месяц
 @bot.slash_command()
 async def month_statistic(ctx, year: int, month: int):
@@ -450,7 +455,7 @@ async def month_statistic(ctx, year: int, month: int):
         logging.debug("month_statistic: get hist for month")
         resp = await func.get_count_hist_for_mouth(month, year)
         if resp == None:
-            await ctx.respond("Ничего не найдено.")
+            await ctx.send("Ничего не найдено.")
         else:
             await ctx.send(file=discord.File(resp, filename='hist_for_mouth.png'))
     else:
@@ -575,9 +580,11 @@ async def get_server_avatar(ctx):
     await ctx.respond(embed=embed)
 
 
+
 ############
 # Опросы   #
 ############
+
 
 @bot.slash_command(name='poll')
 async def create_poll(ctx, question: str,option1: str, option2:str, option3: Optional[str] = None, option4: Optional[str] = None, option5: Optional[str] = None, option6: Optional[str] = None, option7: Optional[str] = None, option8: Optional[str] = None, option9: Optional[str] = None, option10: Optional[str] = None):
@@ -665,15 +672,14 @@ async def show_poll(ctx, message_id: str):
     else:
         await ctx.respond("У вас нет прав на использование данной команды.")
     
+
+
 ##########################################################################
 
 
 if __name__ == "__main__":
-    try:
-        logging.info("hist_db init...")
-        func.db_hist_init()
-        logging.info("bot starting...")
-        bot.run(config.TOKEN)
-    except Exception as e:
-        print(f"ERROR:{e}")
+    logging.info("hist_db init...")
+    func.db_hist_init()
+    logging.info("bot starting...")
+    bot.run(config.TOKEN)
 

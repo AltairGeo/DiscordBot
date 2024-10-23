@@ -20,34 +20,6 @@ async def get_dollar_cost(non: None):
         return cost.text
 
 
-def ai_forget():
-    try:
-        client = OpenAI(
-        base_url = 'http://localhost:11434/v1',
-        api_key='ollama',
-        )
-        response = client.chat.completions.create(
-            model=config.model,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return "Контекст забыт!"
-    except Exception as e:
-        return f"Ошибка: {e}"
-
-def ai_resp(prompt: str):
-    try:
-        client = OpenAI(
-        base_url = 'http://localhost:11434/v1',
-        api_key='ollama',
-        )
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"Ошибка: {e}"
-
 
 
 def db_history():
@@ -69,6 +41,8 @@ def db_hist_init():
         ACTION TEXT
                 )
     """)
+    cur.close()
+    db.close()
 
 
 class API_r():
@@ -143,6 +117,7 @@ async def get_hist_for_day(day: int, mounth: int, year: int):
                     'channel': channel
                     }
             filtered_results.append(bubl)
+    cursor.close()
     conn.close()
     return filtered_results    
 
@@ -197,6 +172,8 @@ async def get_count_hist_for_mouth(mounth: int, year: int):
     #plt.savefig('hist_for_mouth.png')
     plt.savefig(buf, format='png')
     buf.seek(0)
+    cursor.close()
+    conn.close()
     plt.close()
     return buf
 
@@ -220,6 +197,8 @@ async def get_channels_statistic(mounth: int, year: int):
     ORDER BY 
         COUNT DESC;
     """, (f'{year}-{mounth:02d}',))
+    
+    
     data = cursor.fetchall()
     labels = []
     counts = []
@@ -231,7 +210,65 @@ async def get_channels_statistic(mounth: int, year: int):
     buf = BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
+    conn.close()
+    cursor.close()
     plt.close()
+    return buf
+
+
+
+async def get_author_stat(mounth: int, year: int):
+    conn = sq.connect('hist.db')
+    cursor = conn.cursor() # Подключение к бд
+
+    cursor.execute("""
+    SELECT 
+        AUTHOR,
+        COUNT(*) AS COUNT
+    FROM 
+        history
+    WHERE 
+        strftime('%Y-%m', TIME) = ? AND ACTION = 'WRITE'
+    GROUP BY 
+        AUTHOR
+    ORDER BY 
+        COUNT DESC;
+    """, (f'{year}-{mounth:02d}',))
+    
+    
+    data = cursor.fetchall()
+    labels = []
+    counts = []
+    for i in data:
+        labels.append(i[0])
+        counts.append(i[1])
+    
+    count_all_messages = sum(counts)
+
+    data_sorted = sorted(zip(counts, labels), reverse=True)
+    top_6 = data_sorted[:6]
+    labels = []
+    counts = []
+    for i in top_6:
+        labels.append(i[1])
+        counts.append(i[0])
+    # Вычисляем других    
+    count_top6_message = sum(counts)
+    others = count_all_messages - count_top6_message
+    # добавляем других
+    labels.append("Остальные")
+    counts.append(others)
+
+    plt.figure(figsize=(10, 6)) 
+    plt.pie(counts, labels=labels, autopct='%1.1f%%')
+    plt.legend(labels, loc='upper right', bbox_to_anchor=(1.3, 1))
+    plt.tight_layout()
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    plt.close()
+    cursor.close()
+    conn.close()
     return buf
 
 
