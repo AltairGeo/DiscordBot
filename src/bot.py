@@ -69,6 +69,8 @@ async def on_ready():
     await meduza_news(num_of_test_char, post_q, httpx_client)
     logging.info("Meduza parser is started")
 
+
+# Реакция на удаление участника
 @bot.event
 async def on_member_remove(member):
     logging.info(f"User {member.name} leave a server")
@@ -76,7 +78,7 @@ async def on_member_remove(member):
     embed = discord.Embed(title='', description=f"*{member.name}* покинул сервер", color=discord.Color.red())
     await channel.send(embed=embed)
 
-
+# Реакция на бан участника
 @bot.event
 async def on_member_ban(guild, user):
     logging.info(f"User {user.name} was banned on server {guild.name}")
@@ -84,7 +86,7 @@ async def on_member_ban(guild, user):
     embed = discord.Embed(title='**ЗАБАНЕН**', description=f"*{user.name}* был забанен на сервере", color=discord.Color.red())
     await channel.send(embed=embed)
 
-
+# Реакция на присоединение участника
 @bot.event
 async def on_member_join(member: discord.member.Member):
     logging.info("Member joins!")
@@ -128,19 +130,6 @@ async def meduza_news(num_of_test_char, post_query, httpx_client):
                 await channel.send(news_text)
         firstly_indicator = 1
         await asyncio.sleep(20)
-
-
-@bot.command()
-async def gtn(ctx):
-    """A Slash Command to play a Guess-the-Number game."""
-
-    await ctx.respond('Guess a number between 1 and 10.')
-    guess = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
-
-    if int(guess.content) == 5:
-        await ctx.send('You guessed it!')
-    else:
-        await ctx.send('Nope, try again.')
 
 
 # Цена доллара
@@ -317,7 +306,7 @@ async def no_gif(ctx):
     resp = await ap.get_request_json(atr="image", url="https://yesno.wtf/api?force=no")
     await ctx.respond(resp)
 
-
+#wttr.in
 @bot.slash_command()
 async def weather(ctx, city: str):
     logging.info("the /weather was used")
@@ -337,7 +326,7 @@ async def weather(ctx, city: str):
         logging.error(f"Weather error: {e}")
         await ctx.send(f"Ошибка: {e}")
 
-
+#wttr.in/moon
 @bot.slash_command()
 async def moon(ctx):
     logging.info("the /moon was used")
@@ -546,30 +535,9 @@ async def on_message_delete(message: discord.Message):
         AUTHOR, AUTHOR_ID, CONTENT, CHANNEL, CHANNEL_ID, TIME, ACTION
                 ) VALUES (?, ?, ?, ?, ?, ?, "DELETE")
     """, (str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(datetime.now())))
-    #print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(datetime.now()))
     db.commit()
     db.close()
 
-
-# Как делать Embed
-
-#@bot.slash_command()
-#async def send_embed(ctx):
-#    ap = func.API_r()
-#    # Создание embed
-#    embed = discord.Embed(title='Пример Embed', description='Это пример embed-сообщения.', color=discord.Color.blue())
-#    # Добавление поля
-#    embed.add_field(name='Поле 1', value='Значение поля 1', inline=False)
-#    
-#    # Добавление изображения
-#    embed.set_image(url=await ap.get_request_json(atr="image", url="https://randomfox.ca/floof/"))
-#    
-#    # Добавление футера
-#    embed.set_footer(text='Это футер embed-сообщения.')
-#    
-#    # Отправка embed
-#   
-#  await ctx.respond(embed=embed)
 
 
 @bot.slash_command()
@@ -590,102 +558,6 @@ async def get_server_avatar(ctx):
     embed.set_image(url=ctx.guild.icon)
     await ctx.respond(embed=embed)
 
-
-
-############
-# Опросы   #
-############
-
-
-@bot.slash_command(name='poll')
-async def create_poll(ctx, question: str,option1: str, option2:str, option3: Optional[str] = None, option4: Optional[str] = None, option5: Optional[str] = None, option6: Optional[str] = None, option7: Optional[str] = None, option8: Optional[str] = None, option9: Optional[str] = None, option10: Optional[str] = None):
-    logging.info("the /create_poll was used")
-    if await func.moder(ctx) == True:
-        await ctx.respond("Обработка...")
-        reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '10️⃣']
-        options = []
-        reacts = []
-        options.append(option1)
-        options.append(option2)
-        reacts.append(reactions[0])
-        reacts.append(reactions[1])
-
-        if option3 is not None:
-            options.append(option3)
-            reacts.append(reactions[2])
-        if option4 is not None:
-            options.append(option4)
-            reacts.append(reactions[3])
-        if option5 is not None:
-            options.append(option5)
-            reacts.append(reactions[4])
-        if option6 is not None:
-            options.append(option6)
-            reacts.append(reactions[5])
-        if option7 is not None:
-            options.append(option7)
-            reacts.append(reactions[6])
-        if option8 is not None:
-            options.append(option8)
-            reacts.append(reactions[7])
-        if option9 is not None:
-            options.append(option9)
-            reacts.append(reactions[8])
-        if option10 is not None:
-            options.append(option10)
-            reacts.append(reactions[9])
-
-        desc = ""
-        counter = 0
-        for i in options:
-            desc += f"{reacts[counter]} {options[counter]}\n"
-            counter += 1
-        
-        embed = discord.Embed(title=question, description=desc, color=discord.Color.green())
-        message = await ctx.send(embed=embed)
-        for reaction in reacts:
-            await message.add_reaction(reaction)
-    else:
-        ctx.respond("У вас нет прав на выполнение данной команды!")
-
-
-@bot.slash_command()
-async def show_poll(ctx, message_id: str):
-    logging.info("the /show_poll was used")
-    if await func.moder(ctx) == True:
-        try:
-            message = await ctx.channel.fetch_message(message_id)
-        except discord.HTTPException:
-            await ctx.respond('Сообщение не найдено.')
-            return None
-
-        reactions = message.reactions
-        results = {}
-
-        for reaction in reactions:
-            results[reaction.emoji] = reaction.count - 1  # Вычитаем 1, чтобы не учитывать реакцию бота
-
-        x = []
-        y = []
-        co = 0
-        react = ["Кандидат 1", "Кандидат 2", "Кандидат 3", "Кандидат 4", "Кандидат 5", "Кандидат 6", "Кандидат 7", "Кандидат 8", "Кандидат 9", "Кандидат 10"]
-        for reaction, count in results.items():
-            x.append(react[co])
-            y.append(count)
-            co += 1
-
-        await ctx.respond("Обработка...")
-        resp = await func.stolb(x, y)
-        if resp == None:
-            await ctx.send("Ничего не найдено.")
-        else:
-            await ctx.send(file=discord.File(resp, filename='poll.png'))
-    else:
-        await ctx.respond("У вас нет прав на использование данной команды.")
-    
-
-
-##########################################################################
 
 
 if __name__ == "__main__":
