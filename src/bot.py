@@ -197,12 +197,17 @@ async def delwarn_legacy(ctx, id_warn: int):
 @bot.slash_command(description="Показать все предупреждения пользователя")
 async def alluserwarn(ctx: discord.ApplicationContext, name: discord.Member):
     logging.info("the /alluserwarn was used")
+    ListOfMessage = []
     if await func.moder(ctx):
         await ctx.respond("Обработка!")
         for i in dswarn.all_user_warn(name.id):
             embed = discord.Embed(title=f"{i[2]}", description=f"Причина: {i[3]}", color=discord.Color.dark_green())
             embed.set_footer(text=f"warn_id: {i[0]}")
-            await ctx.send(embed=embed, view=uui.AllUserWarns(i[0]))
+            ListOfMessage.append(await ctx.send(embed=embed, view=uui.AllUserWarns(i[0])))
+        await asyncio.sleep(60)
+        for i in ListOfMessage:
+            await i.delete()
+
     else:
         await ctx.send("У вас нет прав на выполнение данной команды!")
 
