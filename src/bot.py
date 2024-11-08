@@ -20,7 +20,7 @@ import discord_ui as uui
 
 
 intents = discord.Intents.all()
-
+intents.reactions = True
 #Класс выбора для переводчика
 class TranslatorView(discord.ui.View):
     def __init__(self, messages):
@@ -341,9 +341,6 @@ async def moon(ctx):
         await ctx.respond("Обработка...")
         logging.debug("moon: Send request to wttr.in")
         resp = await api.get_request(url)
-        print(resp.text)
-        #embed = discord.Embed(title=f'Фаза луны', description=f"```ansi\n{resp.text}```", color=discord.Color.green())
-        #await ctx.send(embed=embed)
         await ctx.send(f"```ansi\n{resp.text}```")
     except Exception as e:
         logging.error(f"moon error: {e}")
@@ -563,6 +560,20 @@ async def get_server_avatar(ctx):
     embed.set_image(url=ctx.guild.icon)
     await ctx.respond(embed=embed)
 
+
+@bot.slash_command()
+async def qr(ctx: discord.ApplicationContext, data :str):
+    logging.info("the /qr was used")
+    image = await fetch_image(f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={data}&color=000000&margin=20")
+    file = discord.File(BytesIO(image), filename='qr.png')
+    await ctx.respond(file=file)
+
+@bot.slash_command()
+async def qr_invert(ctx: discord.ApplicationContext, data :str):
+    logging.info("the /qr was used")
+    image = await fetch_image(f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={data}&color=ffffff&bgcolor=000000&margin=20")
+    file = discord.File(BytesIO(image), filename='qr.png')
+    await ctx.respond(file=file)
 
 
 if __name__ == "__main__":

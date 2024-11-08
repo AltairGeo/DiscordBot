@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 import config, random
-from openai import OpenAI
 import sqlite3 as sq
 from config import path_to_hist_db, apikey_yandex_map_static
 import httpx
