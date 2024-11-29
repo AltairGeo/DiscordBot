@@ -135,7 +135,7 @@ async def meduza_news(num_of_test_char, post_query, httpx_client):
 
 
 # Цена доллара
-@bot.slash_command()
+@bot.slash_command(description="Вы видели курс?!")
 async def dollarcost(ctx):
     cost = await func.get_dollar_cost(None)
     stor = f"1$ = {cost}₽"
@@ -152,7 +152,7 @@ async def addwarn(ctx: discord.ApplicationContext):
 
 
 # Дать предупреждение
-@bot.slash_command(description="Дать предупреждение пользователю.")
+@bot.slash_command(description="Дать предупреждение пользователю(Устаревший интерфейс).")
 async def addwarn_legacy(ctx: discord.ApplicationContext, name: discord.Member, reason: str):
     logging.info("the /addwarn was used")
     author_roles = ctx.author.roles
@@ -179,7 +179,7 @@ async def addwarn_legacy(ctx: discord.ApplicationContext, name: discord.Member, 
     
 
 
-@bot.slash_command(description="Удалить предупреждение у пользователя по id.")
+@bot.slash_command(description="Удалить предупреждение у пользователя по id(Устаревший интерфейс).")
 async def delwarn_legacy(ctx, id_warn: int):
     logging.info("the /delwarn was used")
     author_roles = ctx.author.roles
@@ -196,7 +196,7 @@ async def delwarn_legacy(ctx, id_warn: int):
 
 
 # Все предупреждения пользователя
-@bot.slash_command(description="Показать все предупреждения пользователя")
+@bot.slash_command(description="Показать все предупреждения пользователя.")
 async def alluserwarn(ctx: discord.ApplicationContext, name: discord.Member):
     logging.info("the /alluserwarn was used")
     ListOfMessage = []
@@ -238,7 +238,7 @@ async def mute(ctx: discord.ApplicationContext, name: discord.Member, hours: int
 
 
 #Модуль рандомной статьи из вики 
-@bot.slash_command(description="Рандомная статья из википедии")
+@bot.slash_command(description="Случайная статья из википедии.")
 async def grws(ctx):
     logging.info("the /grws was used")
     if config.ENABLE_WIKI_MODULE == 1:
@@ -280,7 +280,7 @@ async def translate(ctx, message: str):
 ##########
 
 
-@bot.slash_command()
+@bot.slash_command("Орёл или решка?")
 async def flip(ctx):
     logging.info("the /flip was used")
     await ctx.respond(await func.flip())
@@ -292,7 +292,7 @@ async def members_count(ctx):
     await ctx.respond(f"На сервере {ctx.guild.member_count} человек.")
 
 
-@bot.slash_command()
+@bot.slash_command(description="Зачем это тут?")
 async def fox(ctx):
     logging.info("the /fox was used")
     ap = func.API_r()
@@ -300,7 +300,7 @@ async def fox(ctx):
     await ctx.respond(resp)
 
 
-@bot.slash_command()
+@bot.slash_command(description="Да.")
 async def yes_gif(ctx):
     logging.info("the /yes_gif was used")
     ap = func.API_r()
@@ -308,7 +308,7 @@ async def yes_gif(ctx):
     await ctx.respond(resp)
 
 
-@bot.slash_command()
+@bot.slash_command(description="Нет.")
 async def no_gif(ctx):
     logging.info("the /no_gif was used")
     ap = func.API_r()
@@ -316,7 +316,7 @@ async def no_gif(ctx):
     await ctx.respond(resp)
 
 #wttr.in
-@bot.slash_command()
+@bot.slash_command(description="В окно посмотреть, никак?")
 async def weather(ctx, city: str):
     logging.info("the /weather was used")
     ct = city
@@ -336,7 +336,7 @@ async def weather(ctx, city: str):
         await ctx.send(f"Ошибка: {e}")
 
 #wttr.in/moon
-@bot.slash_command()
+@bot.slash_command("Фаза луны.")
 async def moon(ctx):
     logging.info("the /moon was used")
     url = "https://wttr.in/moon?T0&lang=ru"
@@ -352,7 +352,7 @@ async def moon(ctx):
 
 
 #http://numbersapi.com/
-@bot.slash_command()
+@bot.slash_command(description="Случайный факт о числе.")
 async def fact_about_number(ctx, num: int):
     logging.info("the /fact_about_number was used")
     url = f"http://numbersapi.com/{str(num)}"
@@ -369,7 +369,7 @@ async def fact_about_number(ctx, num: int):
 
 
 #https://catfact.ninja/fact
-@bot.slash_command()
+@bot.slash_command("Котики!")
 async def cat_fact(ctx: discord.ApplicationContext):
     await ctx.respond("Обработка...")
     logging.info("the /cat_fact was used")
@@ -387,7 +387,7 @@ async def fetch_image(url):
 
 
 # ISS location
-@bot.slash_command()
+@bot.slash_command(description="Местоположение МКС.")
 async def iss_location(ctx):
     logging.info("the /iss_location was used")
     await ctx.respond("Обработка...")
@@ -405,7 +405,7 @@ async def iss_location(ctx):
 
 
 # Количество людей в космосе
-@bot.slash_command()
+@bot.slash_command(description="Список людей в космосе.")
 async def people_in_space(ctx):
     logging.info("the /people_in_space was used")
     await ctx.respond("Обработка...")
@@ -426,14 +426,14 @@ async def people_in_space(ctx):
         await ctx.send(f"Ошибка! Подробнее: {e}")
 
 
-@bot.slash_command()
+@bot.slash_command(description="Кто я?")
 async def i_moder(ctx):
     logging.info("the /i_moder was used")
     resp = await func.moder(ctx)
     await ctx.respond(str(resp))
 
 
-@bot.slash_command()
+@bot.slash_command("Статистика распределения сообщений за месяц по участникам сервера.")
 async def top7_author_stat(ctx, year: int, month: int):
     logging.info("the /author_stat was used")
     moder = await func.moder(ctx)
@@ -452,7 +452,7 @@ async def top7_author_stat(ctx, year: int, month: int):
 
 
 # Статистика сообщений за месяц
-@bot.slash_command()
+@bot.slash_command(description="Статистика сообщений за месяц по дням.")
 async def month_statistic(ctx, year: int, month: int):
     logging.info("the /month_statistic was used")
     moder = await func.moder(ctx)
@@ -468,7 +468,7 @@ async def month_statistic(ctx, year: int, month: int):
         await ctx.respond("У вас нет прав на выполнение данной команды!")
 
 
-@bot.slash_command()
+@bot.slash_command(description="Статистика распределения сообщей по каналам сервера за месяц.")
 async def channel_statistics(ctx, year: int, month: int):
     logging.info("the /channel_statistics was used")
     moder = await func.moder(ctx)
@@ -536,7 +536,7 @@ async def on_message_delete(message: discord.Message):
 
 ############################################
 
-@bot.slash_command()
+@bot.slash_command(description="Нет слов.")
 async def get_my_avatar(ctx):
     logging.info("the /get_my_avatar was used")
     embed = discord.Embed(title=f'Аватар пользователя {ctx.author.name}',color=discord.Color.green())
@@ -544,7 +544,7 @@ async def get_my_avatar(ctx):
     await ctx.respond(embed=embed)
 
 
-@bot.slash_command()
+@bot.slash_command(description="Божье творенье.")
 async def get_server_avatar(ctx):
     logging.info("the /get_server_avatar was used")
     embed = discord.Embed(title=f'Аватар сервера {ctx.guild.name}',color=discord.Color.green())
@@ -555,14 +555,14 @@ async def get_server_avatar(ctx):
     await ctx.respond(embed=embed)
 
 
-@bot.slash_command()
+@bot.slash_command(description="QR")
 async def qr(ctx: discord.ApplicationContext, data :str):
     logging.info("the /qr was used")
     image = await fetch_image(f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={data}&color=000000&margin=20")
     file = discord.File(BytesIO(image), filename='qr.png')
     await ctx.respond(file=file)
 
-@bot.slash_command()
+@bot.slash_command(description="QR наоборот")
 async def qr_invert(ctx: discord.ApplicationContext, data :str):
     logging.info("the /qr was used")
     image = await fetch_image(f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={data}&color=ffffff&bgcolor=000000&margin=20")
