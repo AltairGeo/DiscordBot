@@ -15,7 +15,7 @@ async def flip():
         return "Решка"
 
 
-async def get_dollar_cost(non: None):
+async def get_dollar_cost(non: None) -> str:
     URL = "https://ru.investing.com/currencies/usd-rub"
     async with httpx.AsyncClient() as client:
         page = await client.get(URL)
@@ -24,12 +24,11 @@ async def get_dollar_cost(non: None):
         return cost.text
 
 
-def db_history():
+def db_history() -> sq.Connection:
     db = sq.connect(path_to_hist_db)
     return db
 
-
-def db_hist_init():
+def db_hist_init() -> None:
     db = db_history()
     cur = db.cursor()
     cur.execute("""
@@ -49,7 +48,7 @@ def db_hist_init():
 
 
 # Проверка на модера по контексту
-async def moder(ctx):
+async def moder(ctx) -> bool:
     author_roles = ctx.author.roles
     mod = config.MOD_ID
     right = 0
@@ -61,7 +60,7 @@ async def moder(ctx):
         return False
     
 # Проверка на модера по объекту пользователя
-async def moder_for_user(user):
+async def moder_for_user(user) -> bool:
     author_roles = user.roles
     mod = config.MOD_ID
     right = 0
