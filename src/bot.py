@@ -280,7 +280,7 @@ async def translate(ctx, message: str):
 ##########
 
 
-@bot.slash_command("Орёл или решка?")
+@bot.slash_command(description="Орёл или решка?")
 async def flip(ctx):
     logging.info("the /flip was used")
     await ctx.respond(await func.flip())
@@ -336,7 +336,7 @@ async def weather(ctx, city: str):
         await ctx.send(f"Ошибка: {e}")
 
 #wttr.in/moon
-@bot.slash_command("Фаза луны.")
+@bot.slash_command(description="Фаза луны.")
 async def moon(ctx):
     logging.info("the /moon was used")
     url = "https://wttr.in/moon?T0&lang=ru"
@@ -369,7 +369,7 @@ async def fact_about_number(ctx, num: int):
 
 
 #https://catfact.ninja/fact
-@bot.slash_command("Котики!")
+@bot.slash_command(description="Котики!")
 async def cat_fact(ctx: discord.ApplicationContext):
     await ctx.respond("Обработка...")
     logging.info("the /cat_fact was used")
@@ -433,7 +433,7 @@ async def i_moder(ctx):
     await ctx.respond(str(resp))
 
 
-@bot.slash_command("Статистика распределения сообщений за месяц по участникам сервера.")
+@bot.slash_command(description="Статистика распределения сообщений за месяц по участникам сервера.")
 async def top7_author_stat(ctx, year: int, month: int):
     logging.info("the /author_stat was used")
     moder = await func.moder(ctx)
