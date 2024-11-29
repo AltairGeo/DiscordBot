@@ -1,13 +1,18 @@
 from bs4 import BeautifulSoup
 import config, random
 import sqlite3 as sq
-from config import path_to_hist_db, apikey_yandex_map_static
+from config import path_to_hist_db, apikey_yandex_map_static, colorscheme
 import httpx
 import datetime
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from io import BytesIO
 
-
+async def flip():
+    if random.randint(1, 2) == 2:
+        return "Орёл"
+    else:
+        return "Решка"
 
 
 async def get_dollar_cost(non: None):
@@ -19,11 +24,10 @@ async def get_dollar_cost(non: None):
         return cost.text
 
 
-
-
 def db_history():
     db = sq.connect(path_to_hist_db)
     return db
+
 
 def db_hist_init():
     db = db_history()
@@ -44,6 +48,32 @@ def db_hist_init():
     db.close()
 
 
+# Проверка на модера по контексту
+async def moder(ctx):
+    author_roles = ctx.author.roles
+    mod = config.MOD_ID
+    right = 0
+    for i in author_roles:
+        i = i.id
+        if str(i) == mod:
+            return True
+    if right == 0:
+        return False
+    
+# Проверка на модера по объекту пользователя
+async def moder_for_user(user):
+    author_roles = user.roles
+    mod = config.MOD_ID
+    right = 0
+    for i in author_roles:
+        i = i.id
+        if str(i) == mod:
+            return True
+    if right == 0:
+        return False
+    
+
+# Для асинхронного обращения к API
 class API_r():
     async def get_request_json_raw(self, url: str) -> str:
         async with httpx.AsyncClient() as client:
@@ -84,66 +114,7 @@ async def get_iss_loc():
 
 async def link_iss_map_form(latitude: str, longitude: str):
     api_url = f"https://static-maps.yandex.ru/v1?apikey={apikey_yandex_map_static}&ll={longitude},{latitude}&z=2&size=450,450&theme=dark&pt={longitude},{latitude},round"
-    return api_url
-
-
-
-async def get_hist_for_day(day: int, mounth: int, year: int):
-    conn = sq.connect('hist.db')
-    cursor = conn.cursor() # Подключение к бд
-
-    cursor.execute("SELECT * FROM history WHERE ACTION = 'WRITE'") # Запрос к бд
-    columns = [desc[0] for desc in cursor.description] # Получение всех колонок бд
-    results = cursor.fetchall() 
-    filtered_results = []
-
-
-    for row in results:
-        time_str = row[columns.index('TIME')]
-        if '+' in time_str: # убираем часовой пояс
-            time_str = time_str[0: -6]
-        if '.' in time_str:  # Если в строке времени есть микросекунды
-            dt = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
-        else:  # Если в строке времени нет микросекунд
-            dt = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
-        if dt.month == mounth and dt.year == year and dt.day == day:
-            message = row[columns.index('CONTENT')]
-            sender = row[columns.index('AUTHOR')]
-            channel = row[columns.index('CHANNEL')]
-            bubl = {'author': sender,
-                    'message': message,
-                    'time': str(dt.time()),
-                    'channel': channel
-                    }
-            filtered_results.append(bubl)
-    cursor.close()
-    conn.close()
-    return filtered_results    
-
-
-async def moder(ctx):
-    author_roles = ctx.author.roles
-    mod = config.MOD_ID
-    right = 0
-    for i in author_roles:
-        i = i.id
-        if str(i) == mod:
-            return True
-    if right == 0:
-        return False
-    
-async def moder_for_user(user):
-    author_roles = user.roles
-    mod = config.MOD_ID
-    right = 0
-    for i in author_roles:
-        i = i.id
-        if str(i) == mod:
-            return True
-    if right == 0:
-        return False
-
-
+    return api_url  
 
 
 async def get_count_hist_for_mouth(mounth: int, year: int):
@@ -169,16 +140,18 @@ async def get_count_hist_for_mouth(mounth: int, year: int):
         return None
     datas = []
     counts = []
-
     for i in data:
-        datas.append(i[0][-2: ])
+        datas.append(datetime.datetime.fromisoformat(i[0]))
         counts.append(i[1])
     buf = BytesIO()
-    plt.plot(datas, counts, color='green', marker='.', markersize=7)
+    plt.figure(figsize=(8.0, 4.0))
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%m-%d"))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    plt.plot(datas, counts, color=colorscheme[2], marker='.', markersize=7)
     plt.xlabel('Месяц-День')
-    plt.ylabel('Количество сообщений') #Подпись для оси y
-    plt.title('Кол-во сообщений за месяц по дням')
-    #plt.savefig('hist_for_mouth.png')
+    plt.ylabel('Количество сообщений')
+    plt.title('Количество сообщений за месяц по дням')
+    plt.gcf().autofmt_xdate()
     plt.savefig(buf, format='png')
     buf.seek(0)
     cursor.close()
@@ -214,7 +187,13 @@ async def get_channels_statistic(mounth: int, year: int):
     for i in data:
         labels.append(i[0])
         counts.append(i[1])
-    plt.pie(counts, labels=labels)
+    explodee = []
+    for i in range(len(labels)):
+        if i == 0:
+            explodee.append(0.05)
+        else:
+            explodee.append(0)
+    plt.pie(counts, labels=labels, explode=explodee, colors=colorscheme)
     plt.title(f"Распределение сообщений по каналам сервера за {year}-{mounth}")
     buf = BytesIO()
     plt.savefig(buf, format='png')
@@ -223,7 +202,7 @@ async def get_channels_statistic(mounth: int, year: int):
     return buf
 
 
-
+# Круговая диограмма статистики по авторам
 async def get_author_stat(mounth: int, year: int):
     conn = sq.connect('hist.db')
     cursor = conn.cursor() # Подключение к бд
@@ -265,10 +244,16 @@ async def get_author_stat(mounth: int, year: int):
     # добавляем других
     labels.append("Остальные")
     counts.append(others)
-
+    explodee = []
+    for i in range(len(labels)):
+        if i == 0:
+            explodee.append(0.07)
+        else:
+            explodee.append(0)
     plt.figure(figsize=(10, 6)) 
-    plt.pie(counts, labels=labels, autopct='%1.1f%%')
+    plt.pie(counts, labels=labels, explode=explodee, autopct='%1.f%%', colors=colorscheme)
     plt.legend(labels, loc='upper right', bbox_to_anchor=(1.3, 1))
+    plt.title(f"Распределение сообщений по участникам за {year}-{mounth}")
     plt.tight_layout()
     buf = BytesIO()
     plt.savefig(buf, format='png')
@@ -279,21 +264,3 @@ async def get_author_stat(mounth: int, year: int):
     return buf
 
 
-async def flip():
-    if random.randint(1, 2) == 2:
-        return "Орёл"
-    else:
-        return "Решка"
-
-
-async def stolb(x, y):
-    plt.bar(x, y, label='Количество голосов', color='#2f6422') #Параметр label позволяет задать название величины для легенды
-    plt.xlabel('Варианты')
-    plt.ylabel('Кол-во голосов')
-    plt.title('Итоги')
-    plt.legend()
-    buf = BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    plt.close()
-    return buf

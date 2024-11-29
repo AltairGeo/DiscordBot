@@ -21,6 +21,8 @@ import discord_ui as uui
 
 intents = discord.Intents.all()
 intents.reactions = True
+
+
 #Класс выбора для переводчика
 class TranslatorView(discord.ui.View):
     def __init__(self, messages):
@@ -206,8 +208,10 @@ async def alluserwarn(ctx: discord.ApplicationContext, name: discord.Member):
             ListOfMessage.append(await ctx.send(embed=embed, view=uui.AllUserWarns(i[0])))
         await asyncio.sleep(60)
         for i in ListOfMessage:
-            await i.delete()
-
+            try:
+                await i.delete()
+            except Exception as e:
+                logging.error(f"alluserwarn delete messages was crush! With error:{e}")
     else:
         await ctx.send("У вас нет прав на выполнение данной команды!")
 
@@ -480,27 +484,6 @@ async def channel_statistics(ctx, year: int, month: int):
         await ctx.respond("У вас нет прав на выполнение данной команды!")
 
 
-##############################################
-###   Получение всех сообщений за день     ###
-##############################################
-
-
-@bot.slash_command()
-async def get_day_hist(ctx, day: int, mounth: int, year: int):
-    logging.info("the /get_day_hist was used")
-    await ctx.respond("Обработка...")
-    moder = await func.moder(ctx)
-    if moder == True:
-        logging.debug("get_day_hist: get all history for day")
-        ls = await func.get_hist_for_day(day, mounth, year)
-        if ls == []:
-            await ctx.send("Ничего не найдено.")
-        for i in ls:
-            await ctx.send(f"**Author:** {i['author']}\n**Content:** ```{i['message']}```\n**Channel:** {i['channel']}\n**Time:**{i['time']}")
-    else:
-        ctx.respond("У вас нет прав на выполнение данной команды!")
-
-
 #############################
 ###  HISTORY OF MESSAGES  ###
 #############################
@@ -524,6 +507,12 @@ async def on_message(message: discord.Message):
         #print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow)))
         db.commit()
         db.close()
+        content = f"```{content[:512]}```"
+        logs = await bot.fetch_channel(config.log_channel_id)
+        embed = discord.Embed(color=discord.Color.yellow(), title="Отправленно сообщение!", description=f"**Author:** {str(author)}\n**Channel:** {str(chanel)}")
+        embed.add_field(name="Content", value=str(content))
+        await logs.send(embed=embed)
+        
     
 
 @bot.listen()
@@ -539,8 +528,13 @@ async def on_message_delete(message: discord.Message):
     """, (str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(datetime.now())))
     db.commit()
     db.close()
+    content = f"```{content[:512]}```"
+    logs = await bot.fetch_channel(config.log_channel_id)
+    embed = discord.Embed(color=discord.Color.red(), title="Удалено сообщение!", description=f"**Author:** {str(author)}\n**Channel:** {str(chanel)}")
+    embed.add_field(name="Content", value=content)
+    await logs.send(embed=embed)
 
-
+############################################
 
 @bot.slash_command()
 async def get_my_avatar(ctx):
