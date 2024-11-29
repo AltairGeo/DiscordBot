@@ -377,7 +377,10 @@ async def cat_fact(ctx: discord.ApplicationContext):
     logging.debug("cat_fact: send request to catfact.ninja/fact")
     resp = await api.get_request_json(atr="fact", url="https://catfact.ninja/fact")
     translatorr = Translator(from_lang='en', to_lang='ru')
-    await ctx.send(f"EN: {resp}\n-------------------------------------------------------------------\nRU: {translatorr.translate(resp)}")
+    embed = discord.Embed(title="Интересный факт", color=discord.Color.green())
+    embed.add_field(name="EN", value=f"{resp}\n")
+    embed.add_field(name="RU", value=translatorr.translate(resp))
+    await ctx.send(embed=embed)
 
 
 async def fetch_image(url):
