@@ -107,6 +107,7 @@ async def get_channels_statistic(mounth: int, year: int, loop: AbstractEventLoop
             explodee.append(0.05)
         else:
             explodee.append(0)
+    plt.figure(figsize=(7, 4))
     plt.pie(counts, labels=labels, explode=explodee, colors=colorscheme)
     plt.title(f"Распределение сообщений по каналам сервера за {year}-{mounth}")
     buf = BytesIO()

@@ -1,6 +1,7 @@
-import sqlite3 as sq
 from db import db
- 
+from log import logging
+
+
 warns = db()
 
 async def db_connect(loop):
@@ -28,6 +29,7 @@ async def add_warn(user_id, user_name, reason, loop):
         await cursor.close()
         return f"Выдано предупреждение пользователю {user_name}"
     except Exception as e:
+        logging.error(f"Add warn func was failet with: {e}")
         return f"Ошибка: {e}"
 
 async def delete_warn(ids, loop):
@@ -41,6 +43,7 @@ async def delete_warn(ids, loop):
         await cursor.close()
         return 'Удалено!'
     except Exception as e:
+        logging.error(f"delete_warn func was failed with: {e}")
         return f"Ошибка: {e}"
         
 
@@ -59,6 +62,7 @@ async def all_user_warn(user_id, loop):
         
         return resp
     except Exception as e:
+        logging.error(f"all_user_warn func was failed with: {e}")
         return f"Ошибка: {e}"
 
 async def get_count_warn(loop):
@@ -75,6 +79,7 @@ async def get_count_warn(loop):
             liste.append(i)
         return liste
     except Exception as e:
+        logging.error(f"get_count_warn was failed with: {e}")
         return f"Ошибка: {e}"
 
 def counter(count):
