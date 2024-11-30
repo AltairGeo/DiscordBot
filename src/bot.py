@@ -7,6 +7,7 @@ import discord.ext
 import dswarn
 import WikiLib as wl
 import othr_func as func
+from stats import stats
 from translate import Translator
 import asyncio
 import httpx
@@ -14,14 +15,15 @@ import collections
 import feedparser
 import pytz
 from io import BytesIO
-from typing import Optional
 from log import logging
 import discord_ui as uui
+from db import db
 
 
 intents = discord.Intents.all()
 intents.reactions = True
 
+hist = db()
 
 #Класс выбора для переводчика
 class TranslatorView(discord.ui.View):
@@ -448,7 +450,8 @@ async def top7_author_stat(ctx, year: int, month: int):
     if moder == True:
         await ctx.respond("Обработка...")
         logging.debug("top7_author_stat: get hist for author")
-        resp = await func.get_author_stat(year=year, mounth=month)
+        loop = asyncio.get_event_loop()
+        resp = await stats.get_author_stat(year=year, mounth=month, loop=loop)
         if resp == None:
             await ctx.send("Ничего не найдено.")
         else:
@@ -466,7 +469,8 @@ async def month_statistic(ctx, year: int, month: int):
     if moder == True:
         await ctx.respond("Обработка...")
         logging.debug("month_statistic: get hist for month")
-        resp = await func.get_count_hist_for_mouth(month, year)
+        loop = asyncio.get_event_loop()
+        resp = await stats.get_count_hist_for_mouth(month, year, loop=loop)
         if resp == None:
             await ctx.send("Ничего не найдено.")
         else:
@@ -476,13 +480,14 @@ async def month_statistic(ctx, year: int, month: int):
 
 
 @bot.slash_command(description="Статистика распределения сообщей по каналам сервера за месяц.")
-async def channel_statistics(ctx, year: int, month: int):
+async def channel_statistics(ctx: discord.ApplicationContext, year: int, month: int):
     logging.info("the /channel_statistics was used")
     moder = await func.moder(ctx)
     if moder == True:
         await ctx.respond("Обработка...")
         logging.debug("channel_statistic: get channel statistic")
-        resp = await func.get_channels_statistic(month, year)
+        loop = asyncio.get_event_loop()
+        resp = await stats.get_channels_statistic(month, year, loop=loop)
         if resp == None:
             await ctx.respond("Ничего не найдено.")
         else:
@@ -504,16 +509,16 @@ async def on_message(message: discord.Message):
         pass
     else:
         moscow = pytz.timezone('Europe/Moscow')
-        db = func.db_history()
-        cur = db.cursor()
-        cur.execute("""
+        loop = asyncio.get_event_loop()
+        db = await hist.conn_create(loop=loop)
+        cur = await db.cursor()
+        await cur.execute("""
         INSERT INTO history (
             AUTHOR, AUTHOR_ID, CONTENT, CHANNEL, CHANNEL_ID, TIME, ACTION
-                    ) VALUES (?, ?, ?, ?, ?, ?, "WRITE")
+                    ) VALUES (%s, %s, %s, %s, %s, %s, "WRITE")
         """, (str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow))))
-        #print(str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(message.created_at.astimezone(moscow)))
-        db.commit()
-        db.close()
+        await db.commit()
+        await cur.close()
         content = f"```{content[:512]}```"
         logs = await bot.fetch_channel(config.log_channel_id)
         embed = discord.Embed(color=discord.Color.yellow(), title="Отправленно сообщение!", description=f"**Author:** {str(author)}\n**Channel:** {str(chanel)}")
@@ -526,15 +531,16 @@ async def on_message(message: discord.Message):
 async def on_message_delete(message: discord.Message):
     logging.info("Message delete processing")
     author, author_id, content, chanel, chanel_id = message.author.name, message.author.id, message.content, message.channel, message.channel.id
-    db = func.db_history()
-    cur = db.cursor()
-    cur.execute("""
+    loop = asyncio.get_event_loop()
+    db = await hist.conn_create(loop=loop)
+    cur = await db.cursor()
+    await cur.execute("""
     INSERT INTO history (
         AUTHOR, AUTHOR_ID, CONTENT, CHANNEL, CHANNEL_ID, TIME, ACTION
-                ) VALUES (?, ?, ?, ?, ?, ?, "DELETE")
+                ) VALUES (%s, %s, %s, %s, %s, %s, "DELETE")
     """, (str(author), str(author_id), str(content), str(chanel), str(chanel_id), str(datetime.now())))
-    db.commit()
-    db.close()
+    await db.commit()
+    await cur.close()
     content = f"```{content[:512]}```"
     logs = await bot.fetch_channel(config.log_channel_id)
     embed = discord.Embed(color=discord.Color.red(), title="Удалено сообщение!", description=f"**Author:** {str(author)}\n**Channel:** {str(chanel)}")
@@ -578,8 +584,6 @@ async def qr_invert(ctx: discord.ApplicationContext, data :str):
 
 
 if __name__ == "__main__":
-    logging.info("hist_db init...")
-    func.db_hist_init()
     logging.info("bot starting...")
     bot.run(config.TOKEN)
 
