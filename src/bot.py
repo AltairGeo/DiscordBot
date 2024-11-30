@@ -155,6 +155,7 @@ async def addwarn(ctx: discord.ApplicationContext):
 @bot.slash_command(description="Дать предупреждение пользователю(Устаревший интерфейс).")
 async def addwarn_legacy(ctx: discord.ApplicationContext, name: discord.Member, reason: str):
     logging.info("the /addwarn was used")
+    loop = asyncio.get_event_loop()
     author_roles = ctx.author.roles
     mod = config.MOD_ID
     right = 0
@@ -163,9 +164,9 @@ async def addwarn_legacy(ctx: discord.ApplicationContext, name: discord.Member, 
         if str(i) == mod:
             user_id = name.id
             user_name = name.name 
-            await ctx.respond(dswarn.add_warn(user_id, user_name, reason))
+            await ctx.respond(await dswarn.add_warn(user_id, user_name, reason, loop))
             logging.debug(f"Add warn to {user_name} for reason: {reason}")
-            result = await dswarn.warn_system(user_id)
+            result = await dswarn.warn_system(user_id, loop=loop)
             if result == 100:
                 await name.timeout_for(timedelta(minutes=20))
             elif result == 105:
@@ -181,6 +182,7 @@ async def addwarn_legacy(ctx: discord.ApplicationContext, name: discord.Member, 
 
 @bot.slash_command(description="Удалить предупреждение у пользователя по id(Устаревший интерфейс).")
 async def delwarn_legacy(ctx, id_warn: int):
+    loop = asyncio.get_event_loop()
     logging.info("the /delwarn was used")
     author_roles = ctx.author.roles
     mod = config.MOD_ID
@@ -188,7 +190,8 @@ async def delwarn_legacy(ctx, id_warn: int):
     for i in author_roles:
         i = i.id
         if str(i) == mod:
-            await ctx.respond(dswarn.delete_warn(id_warn))
+            await ctx.respond("Обработка...")
+            await ctx.send(await dswarn.delete_warn(id_warn, loop=loop))
             logging.debug(f"Deleted warning with id = {id_warn}")
             right = 1
     if right == 0:
@@ -202,7 +205,8 @@ async def alluserwarn(ctx: discord.ApplicationContext, name: discord.Member):
     ListOfMessage = []
     if await func.moder(ctx):
         await ctx.respond("Обработка!")
-        for i in dswarn.all_user_warn(name.id):
+        loop = asyncio.get_event_loop()
+        for i in await dswarn.all_user_warn(name.id, loop=loop):
             embed = discord.Embed(title=f"{i[2]}", description=f"Причина: {i[3]}", color=discord.Color.dark_green())
             embed.set_footer(text=f"warn_id: {i[0]}")
             ListOfMessage.append(await ctx.send(embed=embed, view=uui.AllUserWarns(i[0])))

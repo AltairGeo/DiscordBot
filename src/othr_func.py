@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import config, random
 import sqlite3 as sq
-from config import path_to_hist_db, apikey_yandex_map_static, colorscheme
+from config import apikey_yandex_map_static, colorscheme
 import httpx
 import datetime
 import matplotlib.pyplot as plt
@@ -25,7 +25,7 @@ async def get_dollar_cost(non: None) -> str:
 
 
 def db_history() -> sq.Connection:
-    db = sq.connect(path_to_hist_db)
+    db = sq.connect("hist.db")
     return db
 
 def db_hist_init() -> None:
