@@ -12,7 +12,7 @@ async def flip():
         return "Решка"
 
 
-async def get_dollar_cost(non: None) -> str:
+async def get_dollar_cost() -> str:
     URL = "https://ru.investing.com/currencies/usd-rub"
     async with httpx.AsyncClient() as client:
         page = await client.get(URL)
