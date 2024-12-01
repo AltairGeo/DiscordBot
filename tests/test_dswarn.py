@@ -137,3 +137,33 @@ class TestAddWarn(unittest.IsolatedAsyncioTestCase):
                 elif i > 15:
                     self.assertEqual(counter, 200)
                     print(f"test_counter_succes.subtest: ok {counter}")
+
+    @patch('dswarn.get_count_warn')
+    async def test_warn_system_success(self, mock_get_count_warn):
+        mock_get_count_warn.return_value = [(123, 5), (456, 3)]
+        ids = 123
+
+        loop = asyncio.get_event_loop()
+
+        result = await dswarn.warn_system(ids, loop)
+        self.assertEqual(result, 100)
+
+    @patch('dswarn.get_count_warn')
+    async def test_warn_system_failure(self, mock_get_count_warn):
+        mock_get_count_warn.return_value = [(456, 3)]
+        ids = 123
+
+        loop = asyncio.get_event_loop()
+
+        result = await dswarn.warn_system(ids, loop)
+        self.assertIsNone(result)
+
+    @patch('dswarn.get_count_warn')
+    async def test_warn_system_error(self, mock_get_count_warn):
+        mock_get_count_warn.side_effect = Exception('test_error')
+        ids = 123
+
+        loop = asyncio.get_event_loop()
+
+        with self.assertRaises(Exception):
+            await dswarn.warn_system(ids, loop)
