@@ -3,8 +3,6 @@ import discord
 import discord.ext.commands
 import config
 import discord.ext
-import othr_func as func
-from stats import stats
 import asyncio
 import httpx
 import collections
