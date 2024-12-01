@@ -51,14 +51,28 @@ You can just run it manually with the ```python bot.py command```, but I recomme
 
 # Docker (Recommended)
 
+## Clone repo
 ```
 git clone https://github.com/AltairGeo/DiscordBot
-cd DiscordBot
-docker build -t <your_image_name> .
-
-docker run -e DISCORD_TOKEN=<your_token> \
--e YANDEX_MAP=<your yandex map static api> \
---restart unless-stopped <your_image_name>
-
-# YANDEX_MAP from here https://yandex.ru/maps-api/products/static-api
 ```
+## Move to directory with bot
+```
+cd DiscordBot
+```
+## Build image
+```
+docker build -t <your_image_name> .
+```
+## Run
+```
+docker run -e -d DISCORD_TOKEN=<Your-Discord-Bot-Token> \
+-e YANDEX_MAP=<Your-Yandex-Map-Static-Api-Key> \
+-e DB_HOST=<IP-Your-DataBase \
+-e DB_PORT=<Your-DB-Port> \
+-e DB_USER=<Your-DB-User> \
+-e DB_PASSWORD=<Your-DB-Password> \
+-e DB_DB=ds-bot \
+--restart unless-stopped <your-image-name>
+```
+Use Mysql or Mariadb for database
+YANDEX_MAP from here https://yandex.ru/maps-api/products/static-api
