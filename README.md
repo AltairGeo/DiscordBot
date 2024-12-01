@@ -1,4 +1,4 @@
-# Run(Not recomnended)
+# Run(Not recommended)
 ## 1. Clone repo.
   ```
   https://github.com/AltairGeo/DiscordBot/edit/master/README.md
