@@ -9,7 +9,7 @@ from asyncio import AbstractEventLoop
 
 hist = db.db()
 
-async def db_connect(loop):
+async def db_connect(loop: AbstractEventLoop):
     conn = await hist.conn_create(loop=loop)
     return conn
 
@@ -71,7 +71,6 @@ async def get_count_hist_for_mouth(mounth: int, year: int, loop: AbstractEventLo
     await cursor.close()
     plt.close()
     return buf
-
 
 
 # Круговая диограмма. Распределение сообщений по каналам сервера
