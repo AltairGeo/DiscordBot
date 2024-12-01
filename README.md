@@ -74,5 +74,7 @@ docker run -e -d DISCORD_TOKEN=<Your-Discord-Bot-Token> \
 -e DB_DB=ds-bot \
 --restart unless-stopped <your-image-name>
 ```
-Use Mysql or Mariadb for database
-YANDEX_MAP from here https://yandex.ru/maps-api/products/static-api
+
+<p>Use Mysql or Mariadb for database</p>
+
+<p>YANDEX_MAP from here https://yandex.ru/maps-api/products/static-api</p>
