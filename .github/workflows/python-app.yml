@@ -32,8 +32,5 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Tests
       run: |
-        python -m unittest tests.test_cog_misc
-        python -m unittest tests.test_dswarn.py
-        python -m unittest tests.test_othr_func
-        python -m unittest tests.test_stats
+        python -m unittest discover -s ./tests  -p 'test_*.py'
 
