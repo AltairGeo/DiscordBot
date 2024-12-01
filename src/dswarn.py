@@ -4,9 +4,11 @@ from log import logging
 
 warns = db()
 
+
 async def db_connect(loop):
     conn = await warns.conn_create(loop=loop)
     return conn
+
 
 async def add_warn(user_id, user_name, reason, loop):
     try:
@@ -32,6 +34,7 @@ async def add_warn(user_id, user_name, reason, loop):
         logging.error(f"Add warn func was failet with: {e}")
         return f"Ошибка: {e}"
 
+
 async def delete_warn(ids, loop):
     try:
         conn = await db_connect(loop=loop)
@@ -45,7 +48,6 @@ async def delete_warn(ids, loop):
     except Exception as e:
         logging.error(f"delete_warn func was failed with: {e}")
         return f"Ошибка: {e}"
-        
 
 
 async def all_user_warn(user_id, loop):
@@ -59,18 +61,18 @@ async def all_user_warn(user_id, loop):
         resp = []
         for i in await cursor.fetchall():
             resp.append(i)
-        
+
         return resp
     except Exception as e:
         logging.error(f"all_user_warn func was failed with: {e}")
         return f"Ошибка: {e}"
 
+
 async def get_count_warn(loop):
     try:
         db = await db_connect(loop)
         cursor = await db.cursor()
-        await cursor.execute(
-        """
+        await cursor.execute("""
         SELECT USER_ID, COUNT(*) FROM warns
         GROUP BY USER_ID
         """)
@@ -81,6 +83,7 @@ async def get_count_warn(loop):
     except Exception as e:
         logging.error(f"get_count_warn was failed with: {e}")
         return f"Ошибка: {e}"
+
 
 def counter(count):
     if count <= 10:
@@ -100,4 +103,3 @@ async def warn_system(ids, loop):
         if int(i[0]) == ids:
             result = counter(i[1])
             return result
-

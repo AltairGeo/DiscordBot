@@ -1,10 +1,10 @@
 import unittest
 import sys
 
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import patch, AsyncMock
 sys.path.append("./src")
-import asyncio
-import dswarn
+import asyncio  # noqa: E402
+import dswarn  # noqa: E402
 
 
 class TestAddWarn(unittest.IsolatedAsyncioTestCase):
@@ -23,7 +23,6 @@ class TestAddWarn(unittest.IsolatedAsyncioTestCase):
         result = await dswarn.add_warn(user_id, user_name, reason, loop)
         self.assertEqual(result, f"Выдано предупреждение пользователю {user_name}")
 
-
     @patch('dswarn.db_connect')
     async def test_add_warn_failure(self, mock_db_connect):
         mock_db_connect.return_value = AsyncMock()
@@ -38,7 +37,6 @@ class TestAddWarn(unittest.IsolatedAsyncioTestCase):
 
         result = await dswarn.add_warn(user_id, user_name, reason, loop)
         self.assertEqual(result, 'Ошибка: test_error')
-
 
     @patch('dswarn.db_connect')
     async def test_delete_warn_success(self, mock_db_connect):
@@ -55,7 +53,6 @@ class TestAddWarn(unittest.IsolatedAsyncioTestCase):
         result = await dswarn.delete_warn(ids, loop)
         self.assertEqual(result, 'Удалено!')
 
-
     @patch('dswarn.db_connect')
     async def test_delete_warn_failure(self, mock_db_connect):
         mock_db_connect.return_value = AsyncMock()
@@ -69,7 +66,6 @@ class TestAddWarn(unittest.IsolatedAsyncioTestCase):
         result = await dswarn.delete_warn(ids, loop)
         self.assertEqual(result, 'Ошибка: test_error')
 
-    
     @patch('dswarn.db_connect')
     async def test_all_user_warn_success(self, mock_db_connect):
         mock_db_connect.return_value = AsyncMock()
@@ -84,7 +80,6 @@ class TestAddWarn(unittest.IsolatedAsyncioTestCase):
         result = await dswarn.all_user_warn(user_id, loop)
         self.assertEqual(result, [(1, 'test_user', 'test_reason')])
 
-
     @patch('dswarn.db_connect')
     async def test_all_user_warn_failure(self, mock_db_connect):
         mock_db_connect.return_value = AsyncMock()
@@ -98,7 +93,6 @@ class TestAddWarn(unittest.IsolatedAsyncioTestCase):
         result = await dswarn.all_user_warn(user_id, loop)
         self.assertEqual(result, 'Ошибка: test_error')
 
-    
     @patch('dswarn.db_connect')
     async def test_get_count_warn_success(self, mock_db_connect):
         mock_db_connect.return_value = AsyncMock()

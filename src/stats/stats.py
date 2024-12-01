@@ -9,9 +9,11 @@ from asyncio import AbstractEventLoop
 
 hist = db.db()
 
+
 async def db_connect(loop: AbstractEventLoop):
     conn = await hist.conn_create(loop=loop)
     return conn
+
 
 async def db_hist_init(loop) -> None:
     db = await db_connect(loop=loop)
@@ -33,21 +35,21 @@ async def db_hist_init(loop) -> None:
 
 async def get_count_hist_for_mouth(mounth: int, year: int, loop: AbstractEventLoop):
     db = await db_connect(loop=loop)
-    cursor = await db.cursor() # Подключение к бд
+    cursor = await db.cursor()  # Подключение к бд
 
     await cursor.execute("""
-    SELECT 
+    SELECT
         DATE_FORMAT(TIME, '%%Y-%%m-%%d') AS DAY,
         COUNT(*) AS COUNT
-    FROM 
+    FROM
         history
-    WHERE 
+    WHERE
         STR_TO_DATE(TIME, '%%Y-%%m-%%d') LIKE %s AND ACTION = 'WRITE'
-    GROUP BY 
+    GROUP BY
         DATE_FORMAT(TIME, '%%Y-%%m-%%d')
-    ORDER BY 
+    ORDER BY
         DAY;
-""", (f'{year:04d}-{mounth:02d}-%',)) # Запрос к бд
+""", (f'{year:04d}-{mounth:02d}-%',))  # Запрос к бд
 
     data = await cursor.fetchall()
     if data == []:
@@ -76,22 +78,21 @@ async def get_count_hist_for_mouth(mounth: int, year: int, loop: AbstractEventLo
 # Круговая диограмма. Распределение сообщений по каналам сервера
 async def get_channels_statistic(mounth: int, year: int, loop: AbstractEventLoop):
     conn = await db_connect(loop=loop)
-    cursor = await conn.cursor() # Подключение к бд
+    cursor = await conn.cursor()  # Подключение к бд
 
     await cursor.execute("""
-    SELECT 
+    SELECT
         CHANNEL,
         COUNT(*) AS COUNT
-    FROM 
+    FROM
         history
-    WHERE 
+    WHERE
         DATE_FORMAT(TIME, '%%Y-%%m') = %s AND ACTION = 'WRITE'
-    GROUP BY 
+    GROUP BY
         CHANNEL
-    ORDER BY 
+    ORDER BY
         COUNT DESC;
     """, (f'{year}-{mounth:02d}',))
-    
 
     data = await cursor.fetchall()
     await cursor.close()
@@ -119,30 +120,28 @@ async def get_channels_statistic(mounth: int, year: int, loop: AbstractEventLoop
 # Круговая диограмма статистики по авторам
 async def get_author_stat(mounth: int, year: int, loop: AbstractEventLoop):
     conn = await db_connect(loop=loop)
-    cursor = await conn.cursor() # Подключение к бд
+    cursor = await conn.cursor()  # Подключение к бд
 
     await cursor.execute("""
-    SELECT 
+    SELECT
         AUTHOR,
         COUNT(*) AS COUNT
-    FROM 
+    FROM
         history
-    WHERE 
+    WHERE
         DATE_FORMAT(TIME, '%%Y-%%m') = %s AND ACTION = 'WRITE'
-    GROUP BY 
+    GROUP BY
         AUTHOR
-    ORDER BY 
+    ORDER BY
         COUNT DESC;
     """, (f'{year}-{mounth:02d}',))
-    
-    
+
     data = await cursor.fetchall()
     labels = []
     counts = []
     for i in data:
         labels.append(i[0])
         counts.append(i[1])
-    
     count_all_messages = sum(counts)
 
     data_sorted = sorted(zip(counts, labels), reverse=True)
@@ -152,7 +151,7 @@ async def get_author_stat(mounth: int, year: int, loop: AbstractEventLoop):
     for i in top_6:
         labels.append(i[1])
         counts.append(i[0])
-    # Вычисляем других    
+    # Вычисляем других
     count_top6_message = sum(counts)
     others = count_all_messages - count_top6_message
     # добавляем других
@@ -164,8 +163,11 @@ async def get_author_stat(mounth: int, year: int, loop: AbstractEventLoop):
             explodee.append(0.07)
         else:
             explodee.append(0)
-    plt.figure(figsize=(10, 6)) 
-    plt.pie(counts, labels=labels, explode=explodee, autopct='%1.f%%', colors=colorscheme)
+    plt.figure(figsize=(10, 6))
+    plt.pie(counts, labels=labels,
+            explode=explodee,
+            autopct='%1.f%%',
+            colors=colorscheme)
     plt.legend(labels, loc='upper right', bbox_to_anchor=(1.3, 1))
     plt.title(f"Распределение сообщений по участникам за {year}-{mounth}")
     plt.tight_layout()

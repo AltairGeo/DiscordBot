@@ -1,23 +1,24 @@
 import sys
 
-from unittest.mock import MagicMock, patch, AsyncMock
-sys.path.append("./src")
+from unittest.mock import patch, AsyncMock
 import unittest
-from cogs.misc import Miscellaneous
-import othr_func
 import asyncio
+sys.path.append("./src")
+import othr_func  # noqa: F401, E402
+from cogs.misc import Miscellaneous  # noqa: E402
 
 
 class TestCogMisc(unittest.IsolatedAsyncioTestCase):
-    @patch('othr_func.flip', new_callable=AsyncMock) 
+    @patch('othr_func.flip', new_callable=AsyncMock)
     def test_flip_command(self, mock_flip):
-        mock_flip.return_value = "Орёл" 
+        mock_flip.return_value = "Орёл"
         bot_mock = AsyncMock()
         cog = Miscellaneous(bot_mock)
         ctx_mock = AsyncMock()
+
         async def run_flip():
             await cog.flip(cog, ctx_mock)
-        
+
         asyncio.run(run_flip())
         mock_flip.assert_awaited_once()
         ctx_mock.respond.assert_awaited_once_with("Орёл")
@@ -28,11 +29,11 @@ class TestCogMisc(unittest.IsolatedAsyncioTestCase):
         ctx_mock.guild.member_count = 100
         bot_mock = AsyncMock()
         cog = Miscellaneous(bot_mock)
+
         async def run_test():
             await cog.members_count(cog, ctx_mock)
         asyncio.run(run_test())
         ctx_mock.respond.assert_awaited_once_with("На сервере 100 человек.")
-
 
     @patch('othr_func.API_r')
     async def test_fox_command(self, mock_API_r):

@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
 
 load_dotenv()
 DB_HOST = os.getenv("DB_HOST")
@@ -16,12 +16,12 @@ SERVER_ID = "1020730255742341151"
 MOD_ID = "1135691288117776394"
 news_id = "1266831631474360502"
 colorscheme = [
-"#A2C3DB",
-"#8871A0",
-"#8AAF22",
-"#DCB12D",
-"#3F9F9F",
-"#e77c8d",
-"#937860",
+    "#A2C3DB",
+    "#8871A0",
+    "#8AAF22",
+    "#DCB12D",
+    "#3F9F9F",
+    "#e77c8d",
+    "#937860",
 ]
 log_channel_id = "1135697257761611816"

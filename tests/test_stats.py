@@ -1,15 +1,15 @@
 import sys
 sys.path.append("./src")
-import unittest
-from unittest.mock import patch, AsyncMock
-import asyncio
-import stats.stats
-from stats.stats import get_count_hist_for_mouth, get_channels_statistic, get_author_stat
-from io import BytesIO
-from PIL import Image
+import unittest  # noqa: E402
+from unittest.mock import patch, AsyncMock  # noqa: E402
+import asyncio  # noqa: E402
+import stats.stats  # noqa: E402, F401
+from stats.stats import get_count_hist_for_mouth, get_channels_statistic, get_author_stat  # noqa: E402
+from io import BytesIO  # noqa: E402
+from PIL import Image  # noqa: E402, F401
+
 
 class TestGetCountHistForMouth(unittest.IsolatedAsyncioTestCase):
-
     @patch('stats.stats.db_connect', new_callable=AsyncMock)
     def test_get_count_hist_for_mouth(self, mock_db_connect):
         mock_cursor = AsyncMock()
@@ -29,8 +29,7 @@ class TestGetCountHistForMouth(unittest.IsolatedAsyncioTestCase):
             self.assertIsInstance(result, BytesIO)
 
         asyncio.run(run_test())
-        
-    
+
     @patch('stats.stats.db_connect', new_callable=AsyncMock)
     def test_get_count_hist_for_mouth_error(self, mock_db_connect):
         mock_cursor = AsyncMock()
@@ -45,7 +44,6 @@ class TestGetCountHistForMouth(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(TypeError):
                 await get_count_hist_for_mouth(11, 2024, loop)
         asyncio.run(run_test())
-
 
     @patch('stats.stats.db_connect', new_callable=AsyncMock)
     def test_get_channel_statistic(self, mock_db_connect):
@@ -70,7 +68,6 @@ class TestGetCountHistForMouth(unittest.IsolatedAsyncioTestCase):
             self.assertIsInstance(result, BytesIO)
         asyncio.run(run_test())
 
-
     @patch('stats.stats.db_connect', new_callable=AsyncMock)
     def test_get_channel_statistic_error(self, mock_db_connect):
         mock_cursor = AsyncMock()
@@ -86,7 +83,6 @@ class TestGetCountHistForMouth(unittest.IsolatedAsyncioTestCase):
                 await get_channels_statistic(2024, 11, loop)
         asyncio.run(run_test())
 
-
     @patch('stats.stats.db_connect', new_callable=AsyncMock)
     def test_get_author_statistic(self, mock_db_connect):
         mock_cursor = AsyncMock()
@@ -94,14 +90,12 @@ class TestGetCountHistForMouth(unittest.IsolatedAsyncioTestCase):
         mock_db.cursor.return_value = mock_cursor
         mock_db_connect.return_value = mock_db
 
-        mock_cursor.fetchall.return_value = [
-            ("User1", 450),
-            ("User2", 348),
-            ("User3", 457),
-            ("User4", 123),
-            ("User5", 312),
-            ("User6", 52),
-            ]
+        mock_cursor.fetchall.return_value = [("User1", 450),
+                                             ("User2", 348),
+                                             ("User3", 457),
+                                             ("User4", 123),
+                                             ("User5", 312),
+                                             ("User6", 52),]
 
         async def run_test():
             loop = asyncio.get_event_loop()
@@ -110,7 +104,6 @@ class TestGetCountHistForMouth(unittest.IsolatedAsyncioTestCase):
             # img.save('image.png', 'png')
             self.assertIsInstance(result, BytesIO)
         asyncio.run(run_test())
-
 
     @patch('stats.stats.db_connect', new_callable=AsyncMock)
     def test_get_author_statistic_error(self, mock_db_connect):
@@ -125,9 +118,8 @@ class TestGetCountHistForMouth(unittest.IsolatedAsyncioTestCase):
             loop = asyncio.get_event_loop()
             with self.assertRaises(TypeError):
                 await get_author_stat(2024, 11, loop)
-        asyncio.run(run_test()) 
-    
-    
+        asyncio.run(run_test())
+
 
 if __name__ == '__main__':
     unittest.main()

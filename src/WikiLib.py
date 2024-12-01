@@ -23,8 +23,8 @@ class WikiLib:
             img = self.soup.find("img", class_="mw-file-element")
             img_link = "https:" + img['src']
             return img_link
-        except:
-            return "Not image"
+        except Exception as e:
+            return f"Not image: {e}"
 
     def get_infobox(self):
         strs = ""
@@ -32,28 +32,27 @@ class WikiLib:
             strs += i.text
         return strs
 
-
     def get_main_picture(self):
         try:
             img_div = self.soup.find("td", class_="infobox-image")
             img = img_div.find("img", class_="mw-file-element")
             img_link = "https:" + img['src']
             return img_link
-        except:
-            return "Not image"
+        except Exception as e:
+            return f"Not image: {e}"
 
     def get_all_pictures(self):
         try:
             pics = []
-            for i in self.soup.findAll("img" , class_="mw-file-element"):
+            for i in self.soup.findAll("img", class_="mw-file-element"):
                 link = "https:" + i['src']
                 if type(link) is str:
                     pics.append(link)
                 else:
                     pass
             return pics
-        except:
-            return "Not images"
+        except Exception as e:
+            return f"Not images: {e}"
 
     def get_links(self):
         for i in self.soup.findAll("a", class_="external text"):
