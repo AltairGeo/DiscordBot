@@ -61,7 +61,7 @@ jobs:
           username: ${{ secrets.USER}}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          scripts: |
+          script: |
             docker stop $(docker ps -q --filter ancestor=altairgeo/ds-bot)
             docker rm $(docker ps -q --filter ancestor=altairgeo/ds-bot)
             docker rmi altairgeo/ds-bot
