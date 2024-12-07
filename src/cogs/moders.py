@@ -22,8 +22,7 @@ class moderation(commands.Cog):
         else:
             await ctx.respond("У вас нет прав на выполнение данной команды!")
 
-    @Moders.command(description="Дать предупреждение"
-                    " пользователю(Устаревший интерфейс).")
+    @Moders.command(description="Дать предупреждение пользователю(Устаревший интерфейс).")
     async def addwarn_legacy(self,
                              ctx: discord.ApplicationContext,
                              name: discord.Member,
@@ -53,8 +52,7 @@ class moderation(commands.Cog):
         if right == 0:
             await ctx.respond("У вас нет прав на выполнение данной команды!")
 
-    @Moders.command(description="Удалить предупреждение"
-                    " у пользователя по id(Устаревший интерфейс).")
+    @Moders.command(description="Удалить предупреждение у пользователя по id(Устаревший интерфейс).")
     async def delwarn_legacy(self, ctx, id_warn: int):
         loop = asyncio.get_event_loop()
         logging.info("the /delwarn was used")
@@ -120,6 +118,22 @@ class moderation(commands.Cog):
                 right = 1
         if right == 0:
             await ctx.respond("У вас нет прав на выполнение данной команды!")
+
+    @Moders.command(description="Информация о пользователе.")
+    async def user_info(self, ctx: discord.ApplicationContext, member: discord.Member):
+        logging.info("the /user_info was used")
+        if await func.moder():
+            embed = discord.Embed(title="0_0", description=f"Ник: {member.nick}\nВойс: {member.voice}\nГлавная роль: {member.top_role}", colour=member.accent_colour)
+            embed.add_field(name=member.name, value=f"Дата захода на сервер: {member.joined_at}\nДата создания аккаунта:{member.created_at}\nСтатус: {member.raw_status}")
+            roles = "```"
+            for i in member.roles:
+                roles += f"{i}\n"
+            roles += "```"
+            embed.add_field(name="Роли", value=f"{roles}")
+            embed.set_image(member.avatar.url)
+            await ctx.respond(embed=embed)
+        else:
+            await ctx.send("У вас нет прав на выполнение данной команды!")
 
 
 def setup(bot):
