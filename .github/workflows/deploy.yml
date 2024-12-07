@@ -66,6 +66,6 @@ jobs:
             docker rm $(docker ps -q --filter ancestor=altairgeo/ds-bot)
             docker rmi altairgeo/ds-bot
             sudo docker pull altairgeo/ds-bot:latest
-            docker run -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} -e YANDEX_MAP=${{ secrets.YANDEX_MAP_TOKEN }} -e DB_HOST=${{ secrets.DB_HOST }} -e DB_PORT=${{ secrets.DB_PORT }} -e DB_USER=${{ secrets.DB_USER }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} -e DB_DB=${{ secrets.DB_NAME }} --restart unless-stopped altairgeo/ds-bot
+            docker run -d -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} -e YANDEX_MAP=${{ secrets.YANDEX_MAP_TOKEN }} -e DB_HOST=${{ secrets.DB_HOST }} -e DB_PORT=${{ secrets.DB_PORT }} -e DB_USER=${{ secrets.DB_USER }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} -e DB_DB=${{ secrets.DB_NAME }} --restart unless-stopped altairgeo/ds-bot
 
           
