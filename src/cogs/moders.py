@@ -130,7 +130,7 @@ class moderation(commands.Cog):
                 roles += f"{i}\n"
             roles += "```"
             embed.add_field(name="Роли", value=f"{roles}")
-            embed.set_image(member.avatar.url)
+            embed.set_image(url=member.avatar.url)
             await ctx.respond(embed=embed)
         else:
             await ctx.send("У вас нет прав на выполнение данной команды!")
