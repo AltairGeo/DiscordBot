@@ -58,12 +58,12 @@ jobs:
         USERNAME: ${{ secrets.USERNAME }}
         PORT: ${{ secrets.PORT }}
     steps:
-      - name: print out example job
+      - name: SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ env.HOST }}
           username: ${{ env.PASSWORD }}
           port: 22
-        script: whoami
+          script: whoami
 
           
