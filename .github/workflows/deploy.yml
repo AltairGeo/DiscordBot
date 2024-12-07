@@ -55,12 +55,12 @@ jobs:
     environment: prod
     steps:
       - name: SSH
-        uses: appleboy/ssh-action@v0.1.10
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOST }}
           user: ${{ secrets.USER}}
           password: ${{ secrets.PASSWORD }}
-          port: 22
+          port: ${{ secrets.PORT }}
           script: whoami
 
           
