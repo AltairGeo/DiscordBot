@@ -123,13 +123,13 @@ class moderation(commands.Cog):
     async def user_info(self, ctx: discord.ApplicationContext, member: discord.Member):
         logging.info("the /user_info was used")
         if await func.moder(ctx):
-            embed = discord.Embed(title="0_0", description=f"Ник: {member.nick}\nВойс: {member.voice}\nГлавная роль: {member.top_role}", colour=member.accent_colour)
-            embed.add_field(name=member.name, value=f"Дата захода на сервер: {member.joined_at}\nДата создания аккаунта:{member.created_at}\nСтатус: {member.raw_status}")
+            embed = discord.Embed(title="## 0_0", description=f"### Ник: {member.nick}\n### Войс: {member.voice.channel.name}\n### Главная роль: {member.top_role}", colour=member.accent_colour)
+            embed.add_field(name=member.name, value=f"### Дата захода на сервер: {member.joined_at}\n### Дата создания аккаунта:{member.created_at}\n### Статус: {member.raw_status}")
             roles = "```"
             for i in member.roles:
                 roles += f"{i}\n"
             roles += "```"
-            embed.add_field(name="Роли", value=f"{roles}")
+            embed.add_field(name="## Роли", value=f"{roles}")
             embed.set_image(url=member.avatar.url)
             await ctx.respond(embed=embed)
         else:
