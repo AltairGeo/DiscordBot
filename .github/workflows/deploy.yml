@@ -47,22 +47,17 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: altairgeo/ds-bot:latest
-      - name: Deploying
-        environment:
+
   CD:
     needs: CI
     runs-on: ubuntu-latest
-    environment: 
-      prod:
-        HOSTNAME: ${{ secrets.HOSTNAME }}
-        USERNAME: ${{ secrets.USERNAME }}
-        PORT: ${{ secrets.PORT }}
+    environment: prod
     steps:
       - name: SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ env.HOST }}
-          username: ${{ env.PASSWORD }}
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.PASSWORD }}
           port: 22
           script: whoami
 
