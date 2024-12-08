@@ -128,8 +128,8 @@ class moderation(commands.Cog):
                 voice = "None"
             else:
                 voice = voice.channel.name
-            embed = discord.Embed(title="## 0_0", description=f"### Ник: {member.nick}\n### Войс: {voice}\n### Главная роль: {member.top_role}", colour=member.accent_colour)
-            embed.add_field(name=member.name, value=f"### Дата захода на сервер: {member.joined_at}\n### Дата создания аккаунта:{member.created_at}\n### Статус: {member.raw_status}")
+            embed = discord.Embed(title="0_0", description=f"Ник: {member.nick}\nВойс: {voice}\nГлавная роль: {member.top_role}", colour=member.accent_color)
+            embed.add_field(name=member.name, value=f"Дата захода на сервер: {member.joined_at}\nДата создания аккаунта:{member.created_at}\nСтатус: {member.raw_status}")
             roles = "```"
             for i in member.roles:
                 roles += f"{i}\n"
