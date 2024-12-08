@@ -124,7 +124,7 @@ class moderation(commands.Cog):
         logging.info("the /user_info was used")
         if await func.moder(ctx):
             voice = member.voice
-            if member.voice == None:
+            if member.voice is None:
                 voice = "None"
             else:
                 voice = voice.channel.name
