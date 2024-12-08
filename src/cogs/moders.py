@@ -134,7 +134,7 @@ class moderation(commands.Cog):
             for i in member.roles:
                 roles += f"{i}\n"
             roles += "```"
-            embed.add_field(name="## Роли", value=f"{roles}")
+            embed.add_field(name="Роли", value=f"{roles}")
             embed.set_image(url=member.avatar.url)
             await ctx.respond(embed=embed)
         else:
