@@ -123,7 +123,12 @@ class moderation(commands.Cog):
     async def user_info(self, ctx: discord.ApplicationContext, member: discord.Member):
         logging.info("the /user_info was used")
         if await func.moder(ctx):
-            embed = discord.Embed(title="## 0_0", description=f"### Ник: {member.nick}\n### Войс: {member.voice.channel.name}\n### Главная роль: {member.top_role}", colour=member.accent_colour)
+            voice = member.voice
+            if member.voice == None:
+                voice = "None"
+            else:
+                voice = voice.channel.name
+            embed = discord.Embed(title="## 0_0", description=f"### Ник: {member.nick}\n### Войс: {voice}\n### Главная роль: {member.top_role}", colour=member.accent_colour)
             embed.add_field(name=member.name, value=f"### Дата захода на сервер: {member.joined_at}\n### Дата создания аккаунта:{member.created_at}\n### Статус: {member.raw_status}")
             roles = "```"
             for i in member.roles:
