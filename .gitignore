@@ -1,7 +1,7 @@
 **/__pycache__/
 **.venv/
 *.log
-*.db
+**.db
 .env
 hist.db
 warns.db

@@ -194,7 +194,7 @@ class Miscellaneous(commands.Cog):
     @discord.slash_command(description="Вы видели курс?!")
     # Цена доллара
     async def dollarcost(self, ctx):
-        cost = await func.get_dollar_cost(None)
+        cost = await func.get_dollar_cost()
         stor = f"1$ = {cost}₽"
         logging.info("The /dollarcost was used")
         await ctx.respond(stor)
