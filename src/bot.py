@@ -26,6 +26,7 @@ charts.setup(bot=bot)
 async def on_ready():
     logging.info("Bot started")
 
+
 # Реакция на удаление участника
 @bot.event
 async def on_member_remove(member):
