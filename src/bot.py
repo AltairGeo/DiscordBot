@@ -26,17 +26,7 @@ charts.setup(bot=bot)
 # Действия при запуске бота
 @bot.event
 async def on_ready():
-    print("Bot started!")
     logging.info("Bot started")
-    post_q = collections.deque(maxlen=120)
-    httpx_client = httpx.AsyncClient()
-    num_of_test_char = 70
-    # вызов асинхронного парсера rss ленты и выставление параметров
-    await bot.change_presence(activity=discord.Activity(
-        type=discord.ActivityType.custom, name="0_0"))
-    await meduza_news(num_of_test_char, post_q, httpx_client)
-    logging.info("Meduza parser is started")
-
 
 # Реакция на удаление участника
 @bot.event
@@ -69,44 +59,6 @@ async def on_member_join(member: discord.member.Member):
                           f" {member.mention}!",
                           color=discord.Color.green())
     await member.guild.system_channel.send(embed=embed)
-
-
-# Парсинг rss ленты meduza.io
-async def meduza_news(num_of_test_char, post_query, httpx_client):
-    guild = bot.get_guild(int(config.SERVER_ID))
-    channel = guild.get_channel(int(config.news_id))
-    rss_link = 'https://meduza.io/rss2/all'
-    firstly_indicator = 0
-    while True:
-        try:
-            resurs = await httpx_client.get(rss_link)
-            logging.debug("Meduza parser, request fulfilled ")
-        except Exception as e:
-            logging.warning(f"Falls request. Meduza parser: {e}")
-            await asyncio.sleep(10)
-            continue
-
-        feed = feedparser.parse(resurs.text)
-
-        for i in feed['entries']:
-            title = i['title']
-            summary = i['summary']
-            summary_ready = summary.replace("<p>", "")
-            date = i['published']
-            date_r = date.replace("+0300", "")
-            link = i['link']
-            news_text = f'## {title}\n>>> {summary_ready}\n\n'
-            f'{date_r}\n[Ссылка на статью.]({link})\n_'
-            head = news_text[:num_of_test_char]
-            if head in post_query:
-                continue
-            post_query.appendleft(head)
-            # print(news_text)
-            if firstly_indicator == 1:
-                logging.debug("One of the newsletters has been sent")
-                await channel.send(news_text)
-        firstly_indicator = 1
-        await asyncio.sleep(20)
 
 
 #########################
