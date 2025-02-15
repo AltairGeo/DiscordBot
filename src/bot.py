@@ -9,6 +9,7 @@ from log import logging
 from db import db
 from cogs import moders, misc, charts
 
+
 intents = discord.Intents.all()
 intents.reactions = True
 
