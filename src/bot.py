@@ -4,9 +4,6 @@ import discord.ext.commands
 import config
 import discord.ext
 import asyncio
-import httpx
-import collections
-import feedparser
 import pytz
 from log import logging
 from db import db
